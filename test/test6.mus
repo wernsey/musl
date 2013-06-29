@@ -1,0 +1,33 @@
+# Program to test the functionality of the ON ... GOTO
+# and ON .. GOSUB statements
+
+10 a = 0
+15
+20 LET  a = a + 1 : PRINT("A is ", a) 
+40 IF a < 10 THEN GOTO 20
+
+50 LET number = val(input$("[1-3]> ")) - 1
+60 ON number GOTO 100, 200, 300
+70 GOTO 400
+100 Print("AT 100")
+200 PRINT("AT 200")
+300 PRINT("AT 300")
+350 GOTO 50
+
+# Here is how you use the DATA() function:
+# The first array is to store strings, hence its name ends with '$'
+400 LET len1 = DATA("array$", "Alice", "Bob", "Carol")
+
+# The second array is to store numbers, so its name is normal
+500 LET len2 = DATA("numarray", 111, 222, 333, 444)
+600 PRINT("LEN1: ", len1)
+650 PRINT("LEN2: ", len2)
+700 LET i = 1
+800 PRINT("I: ", i, " ", array$[i], "  => ", numarray[i])
+900 LET i = i + 1
+1000 IF i < len1 + 1 THEN GOTO 800
+
+PRINT("With a FOR loop:")
+FOR i = 1 TO len1 DO
+	PRINT("I: ", i, " ", array$[i], "  => ", numarray[i])
+NEXT 

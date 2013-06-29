@@ -1,0 +1,9 @@
+# Tests the functionality of 
+# the mu_halt() API function.
+
+PRINT("HELLO WORLD!")
+
+HALT()
+
+# This statement shouldn't be executed:
+PRINT("GOODBYE")

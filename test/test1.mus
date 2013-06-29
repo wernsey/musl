@@ -1,0 +1,70 @@
+# A .mus file:
+# A marginally useful script
+
+# Comments start with '#'
+
+# Use the "LET =" construct to assign values to variables
+LET b = 1000
+
+# The LET is optional
+a = 5 + b - 2*5 + 18/3/2
+ 
+LET c = (a+b)/2
+
+# The PRINT() function displlays output on the screen
+PRINT("A is ", a, "; B is ", b , "; C is ", c)
+
+a = 5 + 15
+
+# Variables that store strings' names end with $, eg. bar$
+# Use the STR$() function to convert numbers to strings
+bar$ = STR$(A)
+LET Foo$ = "12" + bar$
+
+PRINT("FOO$ is ", foo$)
+
+foo$ = "Hello"
+foo$ = foo$ + " World"
+
+PRINT("FOO$ is ", foo$)
+
+# Demonstration of a simple loop:
+a = 0
+# Labels are indicated with a '@' and followed by a ':'
+start:       
+  a = a + 1
+  PRINT("A is ", a)
+IF a < 10 THEN GOTO start
+
+# Test of string comparison functions:
+if "aaa" = "aaa" then print("aaa = aaa")
+if "aaa" = "bbb" then print("aaa = bbb ***")
+if "aaa" < "bbb" then print("aaa < bbb")
+if "bbb" < "aaa" then print("bbb < aaa ***")
+if "aaa" > "bbb" then print("aaa > bbb ***" )
+if "bbb" > "aaa" then print("bbb > aaa")
+
+# We also support some logical operators:
+print("Logic: ", not 0, 1 or 0, 1 and 0, 1 and 0 or 1, 1 and 0 or 0, 1 and (1 or 0))
+
+# Use the INPUT$() function to read a line from the keyboard.
+reenter:
+in$ = INPUT$("Enter a number: ")
+
+# Use the VAL() function to convert a string to a number.
+IF VAL(in$) < 10 THEN GOTO enterstring
+PRINT("Number is >= 10")
+GOTO reenter
+enterstring:
+in$ = INPUT$("Enter a string [\"exit\" to exit]> ")
+IF in$ = "exit" THEN END
+PRINT("You entered: ", in$)
+
+IF in$ ~ "foo" THEN PRINT("You did not enter \"foo\"")
+IF in$ = "show" THEN PRINT("########"):PRINT("%%%%%%%%")
+IF in$ = "sub" THEN GOSUB mysub:PRINT("After mysub")
+GOTO enterstring
+
+mysub:
+PRINT("IN mysub")
+RETURN

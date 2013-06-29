@@ -1,0 +1,29 @@
+# Tests the functionality of the 
+# mu_gosub() API function.
+
+PRINT("* USING GOSUB")
+GOSUB sub1
+
+# New feature: Ability to GOSUB from C code.
+PRINT("* USING CALL()")
+CALL("sub1")
+
+PRINT("DONE")
+
+END
+
+sub1:
+	PRINT("NOW IN sub1")
+	x = 0
+	GOSUB sub2
+	PRINT("BACK IN sub1")
+	x = 1
+	GOSUB sub2
+	PRINT("BACK IN sub1")
+	RETURN
+	
+sub2:
+	PRINT("NOW IN sub2: ", x)
+	if x = 0 THEN RETURN
+	PRINT("STILL IN sub2")
+	RETURN

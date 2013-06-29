@@ -1,0 +1,20 @@
+startt:
+#RANDOMIZE()
+a = 1
+start:       
+  a = a + 1
+  IF a = 5 THEN GOSUB wah
+  PRINT("A is ", a)
+  if a % 2 AND RANDOM(4) = 1 THEN GOTO startt
+IF a < 10 THEN GOTO start
+
+GOTO fin
+
+uselesslabel: # Does nothing
+
+wah:
+PRINT(" - Wah wah")
+RETURN
+
+fin:
+PRINT("The End.")

@@ -1,0 +1,37 @@
+a = 0
+start:
+  a = a + 1
+  PRINT("A is ", a) 
+IF a < 10 THEN GOTO start
+
+PRINT("LEN(\"HELLO\")=", LEN("HELLO"))
+
+AAA$ = "Hello"
+BBB$ = "World"
+CCC$ = AAA$ + " " + BBB$
+PRINT(CCC$)
+
+GOSUB mysub
+
+PRINT("After GOSUB")
+
+PRINT("LEFT: |", LEFT$("Hello World", 5), "|")
+PRINT("RIGHT: |", RIGHT$("Hello World", 5), "|")
+PRINT("MID: |", MID$("Hello World From Musl", 7, 11), "|")
+PRINT("UCASE: |", UCASE$("Hello World"), "|")
+PRINT("LCASE: |", LCASE$("Hello World"), "|")
+PRINT("TRIM 1: |", TRIM$("    Hello World"), "|")
+PRINT("TRIM 2: |", TRIM$("Hello World    "), "|")
+PRINT("TRIM 3: |", TRIM$("    Hello World    "), "|")
+PRINT("TRIM 4: |", TRIM$("Hello World"), "|")
+PRINT("INSTR: ", InStr("Hello World", "World"), ",", InStr("Hello World", "rofl"),)
+
+# If you see the XXXX in the output' there's been a regression
+if 0 then if 1 then PRINT("XXXX")
+
+END
+
+mysub:
+PRINT("Now in subroutine")
+RETURN
+

@@ -1,0 +1,72 @@
+PRINT("LOOP 1A")
+10 FOR I = 1 TO 10 DO
+20 IF I = 4 THEN GOTO 60
+30 PRINT("I is ", I)
+40 IF I = 7 THEN NEXT
+50 IF I > 2 THEN GOSUB 100
+60 NEXT
+70 GOTO loop1
+
+100 PRINT("Magic subroutine")
+110 RETURN
+
+loop1:
+PRINT("LOOP 1A")
+FOR I = 1 TO 8 DO 
+	PRINT(I) 
+NEXT
+
+# Loop with a STEP
+PRINT("LOOP 1B")
+FOR I = 2 TO 16 STEP 2 DO 
+	PRINT(I) 
+NEXT
+
+# This loop should go from 8 downto 1 automatically:
+PRINT("LOOP 2")
+FOR I = 8 TO 1 DO 
+	PRINT(I) 
+NEXT
+
+PRINT("LOOP 3")
+FOR I = 1 TO 4 DO
+	# Note: The ':' between statements is still required
+	PRINT(I, "...")   # A comment	
+	PRINT("...bottles of beer on the wall") 	
+NEXT
+
+# Test nested loops:
+PRINT("LOOP 4")
+FOR I = 1 TO 4 DO 
+	FOR J = 1 TO 2 DO 
+		FOR K = 2 TO 4 STEP 2 DO
+			PRINT(I,J, K) 
+		NEXT
+	NEXT 
+NEXT
+
+I = 1234
+
+# "IF x THEN FOR ... " type statements should work now
+IF 0 THEN
+	FOR I = 1 TO PRINT(1,2,3,4,5,6,7) DO 
+		PRINT("You shouldn't see this") 
+	NEXT
+end4:
+PRINT("I is ", I) # I should still be 1234
+
+# Test breaking out of FOR loops:
+PRINT("LOOP 5")
+FOR I = 1 TO 100 DO 
+	PRINT(I):
+	IF i = 5 THEN GOTO exit5
+NEXT
+exit5: 
+PRINT("Out of loop 5: I = ", I)
+
+# There are a couple of things you cannot do with FOR loops:
+# You cannot attach line numbers to statements in the loop
+# bodies, hence you cannot GOTO anywhere inside the body
+# of the loop.
+
+PRINT("    ~~ The End ~~")

@@ -1,0 +1,30 @@
+# Tests and demonstrates the file I/O functions
+
+# The name of our test file
+name$ = "test.tmp"
+
+# Open the file for writing
+f = OPEN(name$, "w")
+
+# Write a couple of lines to the test file
+A = 1
+loop1:
+	WRITE(f, "A is", A)
+	A = A + 1
+IF A < 25 THEN GOTO loop1
+
+# Close the file
+CLOSE(f)
+
+# Reopen the file for reading
+f = OPEN(name$, "r")
+
+# Read and print each line in the test file
+loop2:
+IF EOF(f) THEN GOTO done
+line$ = READ$(f)
+PRINT("Line:", line$)
+GOTO loop2
+
+done: END
+

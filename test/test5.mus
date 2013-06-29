@@ -1,0 +1,31 @@
+start:
+PRINT("Testing ON..GOTO")
+ON VAL(INPUT$("Make a choice [1-3]>")) - 1 GOTO option1, option2, option3
+GOTO start
+option1:
+PRINT("GOTO Option 1 chosen")
+GOTO start
+option2:
+PRINT("GOTO Option 2 chosen")
+GOTO start
+option3:
+PRINT("GOTO Option 3 chosen")
+
+PRINT("Next test:")
+
+start2:
+PRINT("Testing ON..GOSUB")
+ON VAL(INPUT$("Make a choice [1-3]>")) - 1 GOSUB gsoption1, gsoption2, gsoption3
+PRINT("After ON..GOSUB")
+GOTO start2
+
+gsoption1:
+PRINT("GOSUB Option 1 chosen")
+RETURN
+gsoption2:
+PRINT("GOSUB Option 2 chosen")
+RETURN
+gsoption3:
+PRINT("GOSUB Option 3 chosen")
+
+END

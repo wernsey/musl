@@ -1,0 +1,20 @@
+# This is a test program for "IF x THEN FOR..." type 
+# situations, which actually took some complexity to get right
+x = 0
+
+START: PRINT(X): IF X THEN PRINT("STARTING...")
+10 IF X THEN FOR I = 1 TO 10 DO
+20 IF I = 4 THEN GOTO lBl
+30 PRINT("X is ", X, "; I is ", I)
+40 IF I = 7 THEN NEXT
+50 IF I > 2 THEN GOSUB 100
+lbl: NEXT
+
+FOO: IF x = 1 THEN END
+x = x+1
+GOTO start
+
+#### END ####
+
+100 PRINT("in sub")
+RETURN

@@ -1,0 +1,29 @@
+# Program to demonstrate the REGEX() function's use
+
+# Note that you can specify Python-style raw strings
+# using the syntax r"raw string" or r'raw string',
+# which are useful for regexes
+
+# Match a normal regex:
+10 LET M = REGEX(r"([[:digit:]]+)[[:space:]]+([[:alnum:]]*)", "12 \t fooozooo")
+20 GOSUB 1000
+
+# This regex wont match:
+30 LET M = REGEX(r"(aa)(bb)", "foo")
+40 GOSUB 1000
+
+# Regex without any submatches:
+50 LET M = REGEX(r"aabb", "aaaaaabbbbb")
+60 GOSUB 1000
+
+100 END
+
+# Subroutine to print REGEX()'s submatches
+1000 IF M = 0 THEN PRINT("No Match"):RETURN
+1010 PRINT("Matches: ", M)
+# On a successful match, _M$[] will contain all the submatches.
+# Note that _M$[] is 0 indexed, therefore the need for the M-1
+FOR I = 0 TO M - 1 DO
+	PRINT(I, ": |", _M$[I], "|")
+NEXT 
+RETURN

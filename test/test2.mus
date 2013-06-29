@@ -1,0 +1,50 @@
+print("Hello World ", 123)
+
+# This is how you convert a string to a number
+foo = VAL("1234")
+
+# This is how you convert a number to a string
+bar$ = STR$(foo+20) 
+
+print("XXX ", foo, " ", bar$)
+
+# In the test program these variables are predefined
+print("Your variables: ", mystr$, " ", mynum, " ", myarray$["foo"])
+
+# In test mode, these values will be 
+# read when we're done:
+mystr$ = "A stupid sentence"
+mynum = -123
+myarray$["foo"] = "PLUGH"
+
+# Demonstrate the Random number functions
+RANDOMIZE()
+PRINT(RANDOM(5), " ", RANDOM(5,10))
+
+# Demonstrate arrays:
+
+# Using numbers as keys:
+
+LET a = 1
+loop1:
+x[a] = a * a * 10
+a = a + 1
+IF a < 10 THEN GOTO loop1
+
+LET a = 1
+loop2:
+PRINT(a, ": ", x[a])
+LET a = a + 1
+IF a < 10 THEN GOTO loop2
+
+# Using strings as keys:
+
+# An array storing numbers:
+LET x["Hello"] = 1234
+
+# An array storing strings:
+LET x$["Hello"] = "World"
+
+# x and x$ are separate arrays
+PRINT("x[\"Hello\"]: ", x["Hello"])
+PRINT("x$[\"Hello\"]: ", x$["Hello"])
