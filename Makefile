@@ -19,7 +19,7 @@ OBJECTS=$(SOURCES:.c=.o)
 # to disable the REGEX() built-in function
 #CFLAGS += -DWITH_REGEX
 
-all: musl manual.txt
+all: musl manual.html
 
 debug:
 	make "BUILD=debug"
@@ -34,7 +34,7 @@ musl.o : musl.h
 
 main.o : musl.h
 
-manual.txt: doc.awk musl.c main.c
+manual.html: doc.awk musl.c main.c musl.h
 	awk -f $^ > $@
 
 .PHONY : clean
@@ -43,4 +43,4 @@ clean:
 	-rm -rf musl musl.exe
 	-rm -rf *.o
 	-rm -rf *~ *.tmp
-	-rm -rf manual.txt
+	-rm -rf manual.html

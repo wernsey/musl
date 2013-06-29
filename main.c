@@ -156,14 +156,15 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-/********************************************************************************
- *$
- *$ These functions are available to programs run using the 
- *$ standalone interpreter:
- *$ 
- ********************************************************************************/
+/*@ Extended Functions
+ *# These functions are available to programs run using the 
+ *# standalone interpreter:
+ *# 
+ */
 
-/*$ PRINT(exp1, exp2, ...) - Prints all its parameters, followed by a newline */
+/*@ PRINT(exp1, exp2, ...) 
+ *# Prints all its parameters, followed by a newline 
+ */
 static struct mu_par m_print(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {argc}};
 	int i;
@@ -176,8 +177,9 @@ static struct mu_par m_print(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*$ INPUT$([prompt]) - Reads a string from the keyboard, with an optional prompt.
- *$     Trailing newline characters are removed.
+/*@ INPUT$([prompt]) 
+ *# Reads a string from the keyboard, with an optional prompt.\n
+ *# Trailing newline characters are removed.
  */
 static struct mu_par m_input_s(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
@@ -202,10 +204,10 @@ static struct mu_par m_input_s(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*$ OPEN(path, mode) - Opens a given file in a specific mode.
- *$     'mode' can be "r" for reading, "w" for writing, "a" for appending or any
- *$     other value supported by your system's fopen() call.
- *$     It returns a number that should be used with CLOSE(), READ() and WRITE().
+/*@ OPEN(path, mode) 
+ *# Opens a given file in a specific mode.\n
+ *# {{mode}} can be "r" for reading, "w" for writing, "a" for appending.\n
+ *# It returns a number that should be used with {{CLOSE()}}, {{READ()}} and {{WRITE()}}.
  */
 static struct mu_par my_fopen(struct musl *m, int argc, struct mu_par argv[])
 {
@@ -234,8 +236,9 @@ static struct mu_par my_fopen(struct musl *m, int argc, struct mu_par argv[])
 	return rv;
 }
 
-/*$ CLOSE(f) - Closes a previously opened file.
- *$     'f' is the number of the file previously opened with OPEN()
+/*@ CLOSE(f)
+ *# Closes a previously opened file.\n
+ *# {{f}} is the number of the file previously opened with {{OPEN()}}.
  */
 static struct mu_par my_fclose(struct musl *m, int argc, struct mu_par argv[])
 {
@@ -253,8 +256,9 @@ static struct mu_par my_fclose(struct musl *m, int argc, struct mu_par argv[])
 	return rv;
 }
 
-/*$ EOF(f) - Returns 1 if the end of a file has been reached.
- *$     'f' is the number of the file previously opened with OPEN()
+/*@ EOF(f)
+ *# Returns 1 if the end of a file has been reached.\n
+ *# {{f}} is the number of the file previously opened with {{OPEN()}}.
  */
 static struct mu_par my_feof(struct musl *m, int argc, struct mu_par argv[])
 {
@@ -272,9 +276,10 @@ static struct mu_par my_feof(struct musl *m, int argc, struct mu_par argv[])
 	return rv;
 }
 
-/*$ READ$(f) - Reads a line of text from a file.
- *$     'f' is the number of the file previously opened with OPEN()
- *$     It trims the trailing newline.
+/*@ READ$(f) 
+ *# Reads a line of text from a file.\n
+ *# {{f}} is the number of the file previously opened with {{OPEN()}}.\n
+ *# It trims the trailing newline.
  */
 static struct mu_par my_fread(struct musl *m, int argc, struct mu_par argv[])
 {
@@ -311,11 +316,11 @@ static struct mu_par my_fread(struct musl *m, int argc, struct mu_par argv[])
 	return rv;
 }
 
-/*$ WRITE(f, par1, par2, par, ...) - Writes all its parameters to a file,
- *$      followed by a newline.
- *$     'f' is the number of the file previously opened with OPEN()
- *$     The remaining parameters can be numbers or strings, and will be 
- *$     separated by spaces.
+/*@ WRITE(f, par1, par2, par, ...)
+ *# Writes all its parameters to a file, followed by a newline.\n
+ *# {{f}} is the number of the file previously opened with {{OPEN()}}.\n
+ *# The remaining parameters can be numbers or strings, and will be 
+ *# separated by spaces.
  */
 static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[])
 {
@@ -340,8 +345,8 @@ static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[])
 	return rv;
 }
 
-/*$ RANDOMIZE([seed]) - initializes the random number generator.
- *$     with an optional 'seed'
+/*@ RANDOMIZE([seed])
+ *# Initializes the system random number generator with an optional 'seed'
  */
 static struct mu_par m_srand(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
@@ -349,9 +354,12 @@ static struct mu_par m_srand(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*$ RANDOM() - Chooses a random number
- *$ RANDOM(N) - Chooses a random number between 1 and N
- *$ RANDOM(N,M) - Chooses a random number between N and M
+/*@ RANDOM() RANDOM(N) RANDOM(N,M)
+ *{
+ ** {{RANDOM()}} - Chooses a random number
+ ** {{RANDOM(N)}} - Chooses a random number between 1 and N
+ ** {{RANDOM(N,M)}} - Chooses a random number between N and M
+ *}
  */
 static struct mu_par m_rand(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
@@ -370,16 +378,17 @@ static struct mu_par m_rand(struct musl *m, int argc, struct mu_par argv[]) {
  * all platforms.
  */
 
-/*$ REGEX(pattern$, string$) - Matches the regex pattern$ to string$.
- *$      It uses the POSIX Extended regular expression syntax 
- *$      described in 'man 7 regex'.
- *$      It returns the number of matches/submatches or 0 if string$
- *$      does not match the pattern$.
- *$      On a successful match, the array _M$[] will be filled with 
- *$      the submatches. Note that _M$[] is zero indexed: _M$[0] will
- *$      contain the entire string that matched the regex.
- *$      This implies that on a successful match, the largest index in
- *$      _M$[] will be one less than the return value of REGEX()
+/*@ REGEX(pattern$, string$)
+ *# Matches the regex {{pattern$}} to {{string$}}.\n
+ *#      It uses the POSIX Extended regular expression syntax 
+ *#      described in {{'man 7 regex'}}.\n
+ *#      It returns the number of matches/submatches or 0 if {{string$}}
+ *#      does not match the {{pattern$}}.\n
+ *#      On a successful match, the array {{_M$[]}} will be filled with 
+ *#      the submatches. Note that {{_M$[]}} is zero indexed: {{_M$[0]}} will
+ *#      contain the entire string that matched the regex.\n
+ *#      This implies that on a successful match, the largest index in
+ *#      {{_M$[]}} will be one less than the return value of {{REGEX()}}
  */
 static struct mu_par m_regex(struct musl *m, int argc, struct mu_par argv[])
 {
@@ -429,8 +438,9 @@ static struct mu_par m_regex(struct musl *m, int argc, struct mu_par argv[])
 }
 #endif
 
-/*$ CALL(label$) - CALL("label") is the same as GOSUB label.
- *$     It is mainly here to test and demo the mu_gosub() API function.
+/*@ CALL(label$)
+ *# {{CALL("label")}} is the same as {{GOSUB label}}.\n
+ *# {/It is mainly here to test and demo the {{mu_gosub()}} API function./}
  */
 static struct mu_par my_call(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};	
@@ -446,9 +456,10 @@ static struct mu_par my_call(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*$ HALT() - Halts the interpreter immediately.
- *$     Calling this is equivalent to executing an END statement.
- *$     It is mainly here to test and demo the mu_halt() API function.
+/*@ HALT()
+ *# Halts the interpreter immediately.\n
+ *# Calling this is equivalent to executing an {{END}} statement.\n
+ *# It is mainly here to test and demo the {{mu_halt()}} API function.
  */
 static struct mu_par my_halt(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};	

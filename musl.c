@@ -1,11 +1,39 @@
-/*$
- *$ MUSL
- *$   Marginally Useful Scripting Language
- *$ or
- *$   My UnStructured Language
- *$
- *$ An interpreter for a silly unstructured programming language.
- *$
+/*! Musl
+ *#   {/Marginally Useful Scripting Language/}
+ *# or
+ *#   {/My UnStructured Language/}
+ *#
+ *# An interpreter for a silly unstructured programming language.
+ *#
+ *@ License
+ *# Author: Werner Stoop.\n
+ *# These sources are provided under the terms of the unlicense: 
+ *[
+ *# This is free and unencumbered software released into the public domain.
+ *# 
+ *# Anyone is free to copy, modify, publish, use, compile, sell, or
+ *# distribute this software, either in source code form or as a compiled
+ *# binary, for any purpose, commercial or non-commercial, and by any
+ *# means.
+ *# 
+ *# In jurisdictions that recognize copyright laws, the author or authors
+ *# of this software dedicate any and all copyright interest in the
+ *# software to the public domain. We make this dedication for the benefit
+ *# of the public at large and to the detriment of our heirs and
+ *# successors. We intend this dedication to be an overt act of
+ *# relinquishment in perpetuity of all present and future rights to this
+ *# software under copyright law.
+ *# 
+ *# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ *# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ *# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ *# IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ *# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ *# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ *# OTHER DEALINGS IN THE SOFTWARE.
+ *# 
+ *# For more information, please refer to <http://unlicense.org/>
+ *]
  */
  
 #include <stdio.h>
@@ -48,9 +76,9 @@
 
 typedef struct var* hash_table[HASH_SIZE];
 
-/***************************************************************************************
-* Structures
-***************************************************************************************/
+/*
+ * Structures
+ */
 
 enum types {nil, num, str, oper, go};
 
@@ -81,9 +109,9 @@ struct musl {
 	void *user; /* Stores arbitrary user data */
 };
 
-/***************************************************************************************
-* Operators and Keywords
-***************************************************************************************/
+/*
+ * Operators and Keywords
+ */
 
 #define OPERATORS	"=<>~+-*/%()[],:"
 
@@ -148,9 +176,9 @@ static void *mu_alloc(struct musl *m, size_t len) {
 	return p;
 }
 
-/***************************************************************************************
-* Lookup-tables handling
-***************************************************************************************/
+/* 
+ * Lookup-tables handling
+ */
 
 struct var {
 	char *name;
@@ -221,9 +249,9 @@ static void put_var(hash_table tbl, struct var *val) {
 		tbl[h] = val;
 }
 
-/***************************************************************************************
-* Error handling
-***************************************************************************************/
+/*
+ * Error handling
+ */
 
 void mu_throw_error(struct musl *m, const char *msg, ...) {
 	va_list arg;
@@ -253,9 +281,9 @@ int mu_cur_line(struct musl *m) {
 	return line;
 }
 
-/***************************************************************************************
-* Lexical Analyser
-***************************************************************************************/
+/*
+ * Lexical Analyser
+ */
 
 static struct musl *tok_reset(struct musl *m) {
 	if(m->last)
@@ -369,14 +397,12 @@ char *mu_readfile(const char *fname) {
 	return str;
 }
 
-/***************************************************************************************
-* Parser/Compiler
-*$======================================================================================
-*$
-*$ The following describes the syntax of the interpreter.
-*$ Consult the examples if it is unclear. 
-*$
-***************************************************************************************/
+/*
+ *@ Syntax
+ *# The following describes the syntax of the interpreter.
+ *# Consult the examples if it is unclear. 
+ *[
+ */
 
 static const char *stmt(struct musl *m);
 static struct mu_par fparams(const char *name, struct musl *m);
@@ -426,9 +452,9 @@ static int scan_labels(struct musl *m){
 	return 1;
 }
 
-/*$ program ::= [line]*
- *$ line ::= [label ':'] stmts <LF>
- *$            | NUMBER stmts <LF>
+/*# program ::= [line]*
+ *# line ::= [label ':'] stmts <LF>
+ *#            | NUMBER stmts <LF>
  */
 static int program(struct musl *m) {
 	int t, n = 0, ft = 1;
@@ -457,19 +483,19 @@ static int program(struct musl *m) {
 	return n;
 }
 
-/*$ stmts ::= stmt [':' [<LF>+] stmts]
- *$ stmt ::= [LET] ident ['[' (str_expr | expr) ']'] '=' expr
- *$        | [LET] ident$ ['[' (str_expr | expr) ']'] '=' str_expr
- *$        | ident '(' fparams ')'
- *$        | ident$ '(' fparams ')'
- *$        | GOTO label
- *$        | GOSUB label
- *$        | ON expr GOTO label [',' label]*
- *$        | ON expr GOSUB label [',' label]*
- *$        | RETURN
- *$        | IF expr THEN [<LF>+] stmts
- *$        | FOR ident = expr TO expr [STEP expr] DO [<LF>+] stmts [<LF>+] NEXT
- *$        | END
+/*# stmts ::= stmt [':' [<LF>+] stmts]
+ *# stmt ::= [LET] ident ['[' (str_expr | expr) ']'] '=' expr
+ *#        | [LET] ident$ ['[' (str_expr | expr) ']'] '=' str_expr
+ *#        | ident '(' fparams ')'
+ *#        | ident$ '(' fparams ')'
+ *#        | GOTO label
+ *#        | GOSUB label
+ *#        | ON expr GOTO label [',' label]*
+ *#        | ON expr GOSUB label [',' label]*
+ *#        | RETURN
+ *#        | IF expr THEN [<LF>+] stmts
+ *#        | FOR ident = expr TO expr [STEP expr] DO [<LF>+] stmts [<LF>+] NEXT
+ *#        | END
  */
 static const char *stmt(struct musl *m) {  
 	int t, u, has_let=0, q;
@@ -688,7 +714,7 @@ static const char *stmt(struct musl *m) {
 	return NULL;
 }
 
-/*$ expr ::= and_expr [OR and_expr]*
+/*# expr ::= and_expr [OR and_expr]*
  */
 static int expr(struct musl *m) {
 	int n = and_expr(m);
@@ -698,7 +724,7 @@ static int expr(struct musl *m) {
 	return n;
 }
 
-/*$ and_expr ::= not_expr [AND not_expr]*
+/*# and_expr ::= not_expr [AND not_expr]*
  */
 static int and_expr(struct musl *m) {	
 	int n = not_expr(m);
@@ -708,7 +734,7 @@ static int and_expr(struct musl *m) {
 	return n;
 }
 
-/*$ not_expr ::= [NOT] comp_expr
+/*# not_expr ::= [NOT] comp_expr
  */
 static int not_expr(struct musl *m) {
 	if(tokenize(m) == T_NOT)
@@ -717,8 +743,8 @@ static int not_expr(struct musl *m) {
 	return comp_expr(m);
 }
 
-/*$ comp_expr ::= add_expr [('='|'<'|'>'|'~') add_expr]
- *$             | str_expr ('='|'<'|'>'|'~') str_expr
+/*# comp_expr ::= add_expr [('='|'<'|'>'|'~') add_expr]
+ *#             | str_expr ('='|'<'|'>'|'~') str_expr
  */
 static int comp_expr(struct musl *m) {
 	int t, n, r;
@@ -756,8 +782,8 @@ static int comp_expr(struct musl *m) {
 	return n;
 }
 
-/*$ fparams ::= [param ',' param ',' ...]
- *$ param ::= str_expr | expr
+/*# fparams ::= [param ',' param ',' ...]
+ *# param ::= str_expr | expr
  */ 
 static struct mu_par fparams(const char *name, struct musl *m) {
 	int t, i = 0;
@@ -798,8 +824,8 @@ static struct mu_par fparams(const char *name, struct musl *m) {
 	return rv;
 }
 
-/*$ str_expr ::= ("string"|ident$ (['[' (str_expr | expr) ']'] | [fparams])) 
- *$            ['+' ("string"|ident$ (['[' (str_expr | expr) ']'] | [fparams]))]*
+/*# str_expr ::= ("string"|ident$ (['[' (str_expr | expr) ']'] | [fparams])) 
+ *#            ['+' ("string"|ident$ (['[' (str_expr | expr) ']'] | [fparams]))]*
  */
 static char *str_expr(struct musl *m) {
 	int t, u;
@@ -859,7 +885,7 @@ static char *str_expr(struct musl *m) {
 	return s1;	
 }
 
-/*$ add_expr ::= mul_expr [('+'|'-') mul_expr]*
+/*# add_expr ::= mul_expr [('+'|'-') mul_expr]*
  */
 static int add_expr(struct musl *m) {
 	int t;
@@ -873,7 +899,7 @@ static int add_expr(struct musl *m) {
 	return n;
 }
 
-/*$ mul_expr ::= uexpr [('*'|'/'|'%') uexpr]*
+/*# mul_expr ::= uexpr [('*'|'/'|'%') uexpr]*
  */
 static int mul_expr(struct musl *m) {
 	int t, n = uexpr(m), r;
@@ -893,7 +919,7 @@ static int mul_expr(struct musl *m) {
 	return n;
 }
 
-/*$ uexpr ::= ['-'|'+'] atom
+/*# uexpr ::= ['-'|'+'] atom
  */
 static int uexpr(struct musl *m) {
 	int t;
@@ -904,11 +930,12 @@ static int uexpr(struct musl *m) {
 	return atom(m);
 }
 
-/*$ atom ::= '(' expr ')'
- *$        |  ident 
- *$        |  ident '[' (str_expr | expr) ']' 
- *$        |  ident '(' [fparams] ')'
- *$        |  number
+/*# atom ::= '(' expr ')'
+ *#        |  ident 
+ *#        |  ident '[' (str_expr | expr) ']' 
+ *#        |  ident '(' [fparams] ')'
+ *#        |  number
+ *]
  */
 static int atom(struct musl *m) {	
 	int t, u;
@@ -1068,10 +1095,9 @@ void mu_halt(struct musl *m) {
 	m->last = NULL;
 }
 
-/***************************************************************************************
-* Cleanup
-***************************************************************************************/
-
+/*
+ * Cleanup
+ */
 static void clear_svar(struct var *v) {
 	free(v->v.s);
 }
@@ -1083,10 +1109,9 @@ void mu_cleanup(struct musl *m) {
 	free(m);
 }
 
-/***************************************************************************************
-* Accessor functions
-***************************************************************************************/
-
+/*
+ * Accessor functions
+ */
 int mu_set_num(struct musl *m, const char *name, int num) {
 	struct var *v = find_var(m->n_vars, name);
 	if(!v) {
@@ -1128,10 +1153,9 @@ void *mu_get_data(struct musl *m) {
 	return m->user;
 }
 
-/***************************************************************************************
-* External functions
-***************************************************************************************/
-
+/*
+ * External functions
+ */
 int mu_add_func(struct musl *m, const char *name, mu_func fun) {
 	struct var *v = find_var(m->funcs, name);
 	if(!v) {					
@@ -1158,15 +1182,13 @@ const char *mu_par_str(struct musl *m, int n) {
 	return m->argv[n].v.s;
 }
 
-/***************************************************************************************
-* Standard functions
-***************************************************************************************/
+/*
+ * Standard functions
+ */
 
-/*$
- *$======================================================================================
- *$
- *$ The Following built-in functions are available to all scripts.
- *$
+/*@ Built-In Functions
+ *# The Following built-in functions are available to all scripts.
+ *#
  * When adding your own functions, keep the following in mind:
  * - Functions that return strings should allocate those strings on the heap,
  *   because musl will call free() on them at a later stage.
@@ -1174,13 +1196,15 @@ const char *mu_par_str(struct musl *m, int n) {
  *   allow them otherwise.
  */
 
-/*$ VAL(x$) - Converts the string x$ to a number. */
+/*@ VAL(x$) 
+ *# Converts the string {{x$}} to a number. */
 static struct mu_par m_val(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {atoi(mu_par_str(m, 0))}};
 	return rv;
 }
 
-/*$ STR$(x) - Converts the number x to a string. */
+/*@ STR$(x) 
+ *# Converts the number {{x}} to a string. */
 static struct mu_par m_str(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	rv.type = mu_str;
@@ -1189,13 +1213,15 @@ static struct mu_par m_str(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*$ LEN(x$) - Returns the length of string x$ */
+/*@ LEN(x$) 
+ *# Returns the length of string {{x$}} */
 static struct mu_par m_len(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {strlen(mu_par_str(m, 0))}};
 	return rv;
 }
 
-/*$ LEFT$(s$, n) - Returns the n leftmost characters in s$ 
+/*@ LEFT$(s$, n) 
+ *# Returns the {{n}} leftmost characters in {{s$}} 
  */
 static struct mu_par m_left(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
@@ -1215,7 +1241,8 @@ static struct mu_par m_left(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*$ RIGHT$(s$, n) - Returns the n rightmost characters in s$ */
+/*@ RIGHT$(s$, n)
+ *# Returns the {{n}} rightmost characters in {{s$}} */
 static struct mu_par m_right(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	const char *s = mu_par_str(m, 0);
@@ -1237,10 +1264,11 @@ static struct mu_par m_right(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*$ MID$(s$, n, m) - Returns the all the characters in s$ between n and m 
- *$     The string is indexed from 1, that is
- *$         MID$("Hello World From Musl", 7, 11) 
- *$     will return "World"
+/*@ MID$(s$, n, m)
+ *# Returns the all the characters in {{s$}} between {{n}} and {{m}} \n
+ *# The string is indexed from 1, that is
+ *#     {{MID$("Hello World From Musl", 7, 11)}}
+ *# will return {{"World"}}
  */
 static struct mu_par m_mid(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
@@ -1262,7 +1290,8 @@ static struct mu_par m_mid(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*$ UCASE$(x$) - Converts the string x$ to uppercase. */
+/*@ UCASE$(x$) 
+ *# Converts the string {{x$}} to uppercase. */
 static struct mu_par m_ucase(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	char *c;
@@ -1274,7 +1303,8 @@ static struct mu_par m_ucase(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*$ LCASE$(x$) - Converts the string x$ to lowercase. */
+/*@ LCASE$(x$) 
+ *# Converts the string {{x$}} to lowercase. */
 static struct mu_par m_lcase(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	char *c;
@@ -1286,7 +1316,8 @@ static struct mu_par m_lcase(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*$ TRIM$(x$) - Removes leading and trailing whitespace from string x$. */
+/*@ TRIM$(x$) 
+ *# Removes leading and trailing whitespace from string {{x$}}. */
 static struct mu_par m_trim(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	char *c;
@@ -1306,8 +1337,9 @@ static struct mu_par m_trim(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*$ INSTR(str$, find$) - Searches for find$ in str$ and returns the index.
- *$                      It returns 0 if find$ was nt found.
+/*@ INSTR(str$, find$) 
+ *# Searches for {{find$}} in {{str$}} and returns the index.\n
+ *# It returns 0 if find$ was not found.
  */
 static struct mu_par m_instr(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};	
@@ -1318,15 +1350,21 @@ static struct mu_par m_instr(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*$ DATA(list$, item1, item2, item3, ...) - Populates an array named 'list'
- *$      A call DATA("array$", "Alice", "Bob", "Carol") is equivalent
- *$      to the statements:
- *$         LET array$[1] = "Alice"
- *$         LET array$[2] = "Bob"
- *$         LET array$[3] = "Carol"
- *$      Note that the normal rules for identifiers count: If the array is
- *$      to contain strings, the identifier should end with '$'
- *$      It returns the number of items inserted into the array.
+/*@ DATA(list$, item1, item2, item3, ...) 
+ *# Populates an array named 'list'
+ *#      A call 
+ *[
+ *# DATA("array$", "Alice", "Bob", "Carol") 
+ *]
+ *# is equivalent to the statements:
+ *[
+ *# LET array$[1] = "Alice"
+ *# LET array$[2] = "Bob"
+ *# LET array$[3] = "Carol"
+ *]
+ *# Note that the normal rules for identifiers count: If the array is
+ *# to contain strings, the identifier should end with {{'$'}}.\n
+ *# It returns the number of items inserted into the array.
  */
 static struct mu_par m_data(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};	
