@@ -1,4 +1,7 @@
-Musl: My Unstructured Scripting Language
+Musl
+====
+
+My Unstructured Scripting Language
 
 Homepage: http://wstoop.co.za/?musl
 Source: http://github.com/wernsey/musl
@@ -13,8 +16,12 @@ The files in the distribution are:
 * Makefile - The Makefile. To compile, simply type 'make'.
 * doc.awk - Awk script that generates documentation from the comments in
     the source code.
+* test/ - Directory full of test programs that demonstrates the syntax of
+    the interpreter.
 
-Part of 
+Part of the Makefile is to run the code through doc.awk which scans the
+comments in the code for specific symbols from which an HTML file, manual.html,
+is generated.
 
 -------------------------------------------------------------------------------
 These sources are provided under the terms of the unlicense: 
