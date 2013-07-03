@@ -1403,11 +1403,6 @@ static struct mu_par m_data(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/* TODO: These string functions are still missing:
-     + Replace$(str$, find, repl) - Replaces occurances of 'find' with 'repl' in str
-	 + GSUB$() - Like Awk's gsub() function (instead of replace$() above)
-*/
-
 /* Adds the standard functions to the interpreter */
 static int add_stdfuns(struct musl *m) {
 	return !(!mu_add_func(m, "val", m_val) ||
