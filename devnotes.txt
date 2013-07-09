@@ -15,6 +15,9 @@ There aren't any arrays, only hash tables, and they are indexed using [] instead
 
 DIM is not needed (and not implemented) because of the way these hash tables are implemented.
 
+'&' is the string concatenation operator.
+'~' is the not-equals operator.
+
 Things I would lake to change (when I find time):
 =================================================
 
@@ -24,10 +27,6 @@ should be equivalent to
 	PRINT("Hello World")
 even if I only implement it at the statement level.
 
-I'm seriously considering making the language weakly and dynamically typed. Then + would always mean addition and strings will be converted to integers. The ampersand will be used for string concatenation.
-
-It would be a lot of work, but then m->s_vars and m->n_vars can be combined into m->vars. There would then be no distinction between str_expr and expr in the syntax. The $ symbol can still be part of identifiers, but it would not be compulsory to use it to identify variables containing strings.
-
 I need an operator for /references/. What I would like is an operator, say '@' that takes an identifier (perhaps also a number) and converts it to a string, so @ARRAY$ will be equivalent to "ARRAY$". 
 
 It is useful, because then a call to 
@@ -35,6 +34,8 @@ It is useful, because then a call to
 can be rewritten as
 	DATA(@ARRAY$, "Alice", "Bob", "Carol")
 and it will be clear that the first parameter is a reference to a variable called ARRAY$ (even though nothing changed under the hood).
+
+The VAL(x$) and STR$(x) built in functions are probably no longer necessary now that we're weakly typed.
 
 ToDo Built-In Functions:
 ========================

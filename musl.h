@@ -68,7 +68,7 @@ int mu_run(struct musl *m, const char *script);
  *# about the labels of subroutines.\n
  *# It returns 1 on success and 0 on failure, in which
  *# case the external function should clean up and then
- *# call {{mu_throw_error()}} to terminate the script.
+ *# call {{mu_throw()}} to terminate the script.
  */
 int mu_gosub(struct musl *m, const char *label);
 
@@ -112,12 +112,12 @@ typedef struct mu_par (*mu_func)(struct musl *m, int argc, struct mu_par argv[])
  */
 int mu_add_func(struct musl *m, const char *name, mu_func fun);
 
-/*@ void mu_throw_error(struct musl *m, const char *msg, ...)
+/*@ void mu_throw(struct musl *m, const char *msg, ...)
  *# Reports errors that happen in external functions. 
  *# Don't call it from anywhere else because it uses
  *# longjmp() to return to the mu_execute(). 
  */
-void mu_throw_error(struct musl *m, const char *msg, ...);
+void mu_throw(struct musl *m, const char *msg, ...);
 
 /*@ const char *mu_error_msg(struct musl *m)
  *# Retrieves a text description of errors that occured 
@@ -141,14 +141,14 @@ int mu_cur_line(struct musl *m);
 /*@ int mu_par_num(struct musl *m, int n)
  *# Gets the n'th parameter of a function as a number.\n
  *# Only call it from {{mu_func()}} external functions because 
- *# it uses {{mu_throw_error()}} on errors.
+ *# it uses {{mu_throw()}} on errors.
  */
 int mu_par_num(struct musl *m, int n);
 
 /*@ const char *mu_par_str(struct musl *m, int n)
  *# Gets the n'th parameter of a function as a string.\n
  *# Only call it from {{mu_func()}} external functions because 
- *# it uses {{mu_throw_error()}} on errors.
+ *# it uses {{mu_throw()}} on errors.
  */
 const char *mu_par_str(struct musl *m, int n);
 

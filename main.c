@@ -193,14 +193,14 @@ static struct mu_par m_input_s(struct musl *m, int argc, struct mu_par argv[]) {
 	rv.type = mu_str;
 	rv.v.s = malloc(INPUT_BUFFER_SIZE + 1);
 	if(!rv.v.s) {
-		mu_throw_error(m, "Out of memory");
+		mu_throw(m, "Out of memory");
 	}
 	
 	rv.v.s[0] = '\0';
 	if(fgets(rv.v.s, INPUT_BUFFER_SIZE, stdin))
 		for(c=rv.v.s;c[0];c++)
 			if(strchr("\r\n",c[0]))
-				c[0] = '\0';
+				c[0] = '\0';	
 	return rv;
 }
 
@@ -227,11 +227,11 @@ static struct mu_par my_fopen(struct musl *m, int argc, struct mu_par argv[])
 	for(rv.v.i = 0; rv.v.i < NUM_FILES && data->files[rv.v.i]; rv.v.i++);
 	
 	if(rv.v.i == NUM_FILES)
-		mu_throw_error(m, "Too many open files");
+		mu_throw(m, "Too many open files");
 	
 	data->files[rv.v.i] = fopen(path, mode);
 	if(!data->files[rv.v.i])
-		mu_throw_error(m, "Unable to OPEN() file");
+		mu_throw(m, "Unable to OPEN() file");
 	
 	return rv;
 }
@@ -249,7 +249,7 @@ static struct mu_par my_fclose(struct musl *m, int argc, struct mu_par argv[])
 	index = mu_par_num(m, 0);
 	
 	if(index < 0 || index > NUM_FILES || !data->files[index])
-		mu_throw_error(m, "Invalid file handle in CLOSE()");
+		mu_throw(m, "Invalid file handle in CLOSE()");
 	fclose(data->files[index]);
 	data->files[index] = NULL;
 		
@@ -269,7 +269,7 @@ static struct mu_par my_feof(struct musl *m, int argc, struct mu_par argv[])
 	index = mu_par_num(m, 0);
 	
 	if(index < 0 || index > NUM_FILES || !data->files[index])
-		mu_throw_error(m, "Invalid file handle in EOF()");
+		mu_throw(m, "Invalid file handle in EOF()");
 
 	rv.v.i = feof(data->files[index]);
 		
@@ -291,14 +291,14 @@ static struct mu_par my_fread(struct musl *m, int argc, struct mu_par argv[])
 	index = mu_par_num(m, 0);
 	
 	if(index < 0 || index > NUM_FILES || !data->files[index])
-		mu_throw_error(m, "Invalid file handle in READ$()");
+		mu_throw(m, "Invalid file handle in READ$()");
 	
 	if(!fgets(buffer, INPUT_BUFFER_SIZE, data->files[index]))
 	{
 		if(feof(data->files[index]))
 			buffer[0] = '\0';
 		else
-			mu_throw_error(m, "Couldn't READ$() from file");
+			mu_throw(m, "Couldn't READ$() from file");
 	}
 	
 	for(i = 0; buffer[i]; i++)
@@ -312,7 +312,7 @@ static struct mu_par my_fread(struct musl *m, int argc, struct mu_par argv[])
 	rv.type = mu_str;
 	rv.v.s = strdup(buffer);	
 	if(!rv.v.s)
-		mu_throw_error(m, "Out of memory");
+		mu_throw(m, "Out of memory");
 	return rv;
 }
 
@@ -331,7 +331,7 @@ static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[])
 	index = mu_par_num(m, 0);
 	
 	if(index < 0 || index > NUM_FILES || !data->files[index])
-		mu_throw_error(m, "Invalid file handle in EOF()");
+		mu_throw(m, "Invalid file handle in EOF()");
 
 	for(i = 1; i < argc; i++)
 	{
@@ -403,14 +403,14 @@ static struct mu_par m_regex(struct musl *m, int argc, struct mu_par argv[])
 	if((r = regcomp(&preg, pat, REG_EXTENDED)) != 0) {		
 		regerror(r, &preg, errbuf, MAX_ERROR_TEXT);
 		regfree(&preg);
-		mu_throw_error(m, "In REGEX(): %s", errbuf);
+		mu_throw(m, "In REGEX(): %s", errbuf);
 	}
 	
 	if((r = regexec(&preg, str, 10, sm, 0)) != 0) {
 		if(r != REG_NOMATCH) {
 			regerror(r, &preg, errbuf, MAX_ERROR_TEXT);
 			regfree(&preg);
-			mu_throw_error(m, "In REGEX(): %s", errbuf);
+			mu_throw(m, "In REGEX(): %s", errbuf);
 		}
 		rv.v.i = 0;
 	} else {	
@@ -428,7 +428,7 @@ static struct mu_par m_regex(struct musl *m, int argc, struct mu_par argv[])
 			
 			snprintf(name, TOK_SIZE, "_m$[%d]", r);			
 			if(!mu_set_str(m, name, match))
-				mu_throw_error(m, "Out of memory");
+				mu_throw(m, "Out of memory");
 			free(match);
 		}
 		rv.v.i = r;
@@ -448,10 +448,10 @@ static struct mu_par my_call(struct musl *m, int argc, struct mu_par argv[]) {
 	
 	rv.v.i = mu_gosub(m, label);
 	if(!rv.v.i) {
-		/* You really should call mu_throw_error(),
+		/* You really should call mu_throw(),
 		 * but you get an opportunity first to
  		 * clean up after yourself */
-		mu_throw_error(m, mu_error_msg(m));
+		mu_throw(m, mu_error_msg(m));
 	}	
 	return rv;
 }
