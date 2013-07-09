@@ -1267,11 +1267,9 @@ const char *mu_par_str(struct musl *m, int n) {
 /*@ Built-In Functions
  *# The Following built-in functions are available to all scripts.
  *#
- * When adding your own functions, keep the following in mind:
- * - Functions that return strings should allocate those strings on the heap,
- *   because musl will call free() on them at a later stage.
- * - Functions that return strings' names must end with $. The parser won't
- *   allow them otherwise.
+ * When implementing your own functions, keep in mind that functions 
+ * that return strings should allocate those strings on the heap,
+ * because Musl will call free() on them at a later stage.
  */
 
 /*@ VAL(x$) 
@@ -1440,8 +1438,6 @@ static struct mu_par m_instr(struct musl *m, int argc, struct mu_par argv[]) {
  *# LET array$[2] = "Bob"
  *# LET array$[3] = "Carol"
  *]
- *# Note that the normal rules for identifiers count: If the array is
- *# to contain strings, the identifier should end with {{'$'}}.\n
  *# It returns the number of items inserted into the array.
  */
 static struct mu_par m_data(struct musl *m, int argc, struct mu_par argv[]) {
