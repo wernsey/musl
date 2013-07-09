@@ -3,17 +3,17 @@ My Developer Notes
 Differences from traditional BASICs:
 ====================================
 
-PRINT is a function call, not a statement (mostly because if used as an embedded escripting language there may not be anywhere to print to).
+PRINT is a function call, not a statement (mostly because if used as an embedded scripting language there may not be anywhere to print to).
 
-Comments use hash symbols rather than single quotes. This is partly because I wanted single quotes to have the same meaning as double quotes, a la Javacript.
+Comments use hash symbols rather than single quotes. This is partly because I wanted single quotes to have the same meaning as double quotes, as in Javacript.
 
 REM is not supported for comments.
 
 Statements found in some old BASICs that are not available include CLS, LOCATE, WHILE-WEND and so on.
 
-DIM is not needed (and not implemented) because the languag is not strongly typed.
+There aren't any arrays, only hash tables, and they are indexed using [] instead of ().
 
-There aren't any arrays, only hash tables, and they are indexed using [] instead of ()
+DIM is not needed (and not implemented) because of the way these hash tables are implemented.
 
 Things I would lake to change (when I find time):
 =================================================
@@ -28,6 +28,14 @@ I'm seriously considering making the language weakly and dynamically typed. Then
 
 It would be a lot of work, but then m->s_vars and m->n_vars can be combined into m->vars. There would then be no distinction between str_expr and expr in the syntax. The $ symbol can still be part of identifiers, but it would not be compulsory to use it to identify variables containing strings.
 
+I need an operator for /references/. What I would like is an operator, say '@' that takes an identifier (perhaps also a number) and converts it to a string, so @ARRAY$ will be equivalent to "ARRAY$". 
+
+It is useful, because then a call to 
+	DATA("ARRAY$", "Alice", "Bob", "Carol")
+can be rewritten as
+	DATA(@ARRAY$, "Alice", "Bob", "Carol")
+and it will be clear that the first parameter is a reference to a variable called ARRAY$ (even though nothing changed under the hood).
+
 ToDo Built-In Functions:
 ========================
 
@@ -41,7 +49,10 @@ Speaking of Awk, how about a function AWK(line$, [delim$]) that takes line$ and 
 
 IIF(expr, a, b) and IIF$(expr, a$, b$)
 
-PUSH() and POP() functions that store variables inside some internal stack temporarily (useful for GOSUBs, because they can emulate local variables).
+PUSH() and POP() functions that store variables inside some internal stack temporarily (useful for GOSUBs, because they can emulate local variables). These would benefit if the language was dynamically/weakly typed because as it stands one would need a POP() and POP$() function.
 
 I'd also like to have a feature to dump all the variables somewhere for debugging Musl programs. It should be an API function and a Built-in function.
 
+If I make the language dynamically typed, then the DATA() function can also store the length in a "length" field. In other words, a call like
+	DATA(@ARRAY$, "Alice", "Bob", "Carol")
+will result in ARRAY$["length"] being 3, in addition to its existing functionality (the Awk() function I proposed above should behave the same way wrt. _C["length"]). 

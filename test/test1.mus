@@ -11,11 +11,11 @@ a = 5 + b - 2*5 + 18/3/2
  
 LET c = (a+b)/2
 
-# You can use \ to escapt the end of the line
+# The PRINT() function displays output on the screen:
+# You can use \ to escape the end of the line
 PRINT("HELLO",  \ 
-		"WORLD")
+		" WORLD")
 
-# The PRINT() function displlays output on the screen
 PRINT("A is ", a, "; B is ", b , "; C is ", c)
 
 a = 5 + 15
