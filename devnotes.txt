@@ -24,8 +24,6 @@ should be equivalent to
 	PRINT("Hello World")
 even if I only implement it at the statement level.
 
-You should be able to escape a newline using a backslash to break up long statements (also, whitespace between the backslash and the newline should be ignored). So this regex /\\\s*?\n/ should be treated as whitespace.
-
 I'm seriously considering making the language weakly and dynamically typed. Then + would always mean addition and strings will be converted to integers. The ampersand will be used for string concatenation.
 
 It would be a lot of work, but then m->s_vars and m->n_vars can be combined into m->vars. There would then be no distinction between str_expr and expr in the syntax. The $ symbol can still be part of identifiers, but it would not be compulsory to use it to identify variables containing strings.
@@ -42,6 +40,8 @@ GSUB$() - Like Awk's gsub() function (instead of replace$() above)
 Speaking of Awk, how about a function AWK(line$, [delim$]) that takes line$ and splits it into columns in the _C[i], so that a Musl script can do some of the same work as Awk. It returns the number of columns found in the line.
 
 IIF(expr, a, b) and IIF$(expr, a$, b$)
+
+PUSH() and POP() functions that store variables inside some internal stack temporarily (useful for GOSUBs, because they can emulate local variables).
 
 I'd also like to have a feature to dump all the variables somewhere for debugging Musl programs. It should be an API function and a Built-in function.
 

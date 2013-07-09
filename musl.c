@@ -294,9 +294,10 @@ static struct musl *tok_reset(struct musl *m) {
 static int tokenize(struct musl *m) {
 	char *t;	
 	if(!m->s) return T_END;
-
+	
 	m->last = m->s;
-		
+	
+whitespace:	
 	while(isspace(m->s[0]))
 		if((m->s++)[0] == '\n') 
 			return T_LF;
@@ -307,6 +308,19 @@ static int tokenize(struct musl *m) {
 				return T_END;
 		return T_LF;
 	}	
+	
+	if(m->s[0] == '\\') {
+		do {
+			m->s++;
+		} while(m->s[0] && m->s[0] != '\n' && isspace(m->s[0]));
+		if(m->s[0] != '\n') {
+			mu_throw_error(m, "Bad '\\' at end of line");
+		}
+		m->s++;
+		goto whitespace;
+	}
+	
+	m->last = m->s;
 
 	if(!m->s[0])
 		return T_END;
