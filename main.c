@@ -33,17 +33,17 @@ struct user_data {
  * Look at the comments in the definitions below to see how to
  * add your own functions to a musl interpreter.
  */
-static struct mu_par m_print(struct musl *m, int argc, struct mu_par argv[]);
-static struct mu_par m_input_s(struct musl *m, int argc, struct mu_par argv[]);
+static struct mu_par my_print(struct musl *m, int argc, struct mu_par argv[]);
+static struct mu_par my_input_s(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_fopen(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_fclose(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_feof(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_fread(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[]);
-static struct mu_par m_srand(struct musl *m, int argc, struct mu_par argv[]);
-static struct mu_par m_rand(struct musl *m, int argc, struct mu_par argv[]);
+static struct mu_par my_srand(struct musl *m, int argc, struct mu_par argv[]);
+static struct mu_par my_rand(struct musl *m, int argc, struct mu_par argv[]);
 #ifdef WITH_REGEX
-static struct mu_par m_regex(struct musl *m, int argc, struct mu_par argv[]);
+static struct mu_par my_regex(struct musl *m, int argc, struct mu_par argv[]);
 #endif
 static struct mu_par my_call(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_halt(struct musl *m, int argc, struct mu_par argv[]);
@@ -61,14 +61,12 @@ int main(int argc, char *argv[])
 	for(r = 0; r < NUM_FILES; r++)
 		data.files[r] = NULL;
 	
-	if(argc <= 1)
-	{		
+	if(argc <= 1) {		
 		fprintf(stderr, "Usage: %s FILE1 FILE2 ...\n", argv[0]);
 		return 1;
 	}
 	
-	if(!(m = mu_create()))
-	{
+	if(!(m = mu_create())) {
 		fprintf(stderr, "ERROR: Couldn't create MUSL structure\n");
 		exit(EXIT_FAILURE);
 	}
@@ -79,8 +77,8 @@ int main(int argc, char *argv[])
 	/* Add the custom functions to the interpreter here.
 	 * Function names must be in lowercase.
 	 */
-	mu_add_func(m, "print", m_print);
-	mu_add_func(m, "input$", m_input_s);
+	mu_add_func(m, "print", my_print);
+	mu_add_func(m, "input$", my_input_s);
 	
 	mu_add_func(m, "open", my_fopen);
 	mu_add_func(m, "close", my_fclose);
@@ -89,8 +87,8 @@ int main(int argc, char *argv[])
 	mu_add_func(m, "read$", my_fread);
 	mu_add_func(m, "write", my_fwrite);
 	
-	mu_add_func(m, "randomize", m_srand);
-	mu_add_func(m, "random", m_rand);
+	mu_add_func(m, "randomize", my_srand);
+	mu_add_func(m, "random", my_rand);
 	
 #ifdef WITH_REGEX
 	mu_add_func(m, "regex", m_regex);
@@ -110,13 +108,11 @@ int main(int argc, char *argv[])
 	/* You can also access array variables like this: */
 	mu_set_str(m, "myarray$[foo]", "XYZZY");
 
-	for(i = 1; i < argc; i++)
-	{
+	for(i = 1; i < argc; i++) {
 		/* mu_readfile() is a helper function to read an entire
 		 * script file into memory
 		 */
-		if(!(s = mu_readfile(argv[i])))
-		{
+		if(!(s = mu_readfile(argv[i]))) {
 			fprintf(stderr, "ERROR: Unable to read \"%s\"\n", argv[i]);
 			exit(EXIT_FAILURE);
 		}	
@@ -126,9 +122,8 @@ int main(int argc, char *argv[])
 #endif
 
 		/* Run the script from the string */
-		if(!mu_run(m, s))
-		{
-			/* This is how you retrieve info about compile time errors: */
+		if(!mu_run(m, s)) {
+			/* This is how you retrieve info about interpreter errors: */
 			fprintf(stderr, "ERROR:Line %d: %s:\n>> %s\n", mu_cur_line(m), mu_error_msg(m),
 					mu_error_text(m));
 			return 1;
@@ -165,7 +160,7 @@ int main(int argc, char *argv[])
 /*@ PRINT(exp1, exp2, ...) 
  *# Prints all its parameters, followed by a newline 
  */
-static struct mu_par m_print(struct musl *m, int argc, struct mu_par argv[]) {
+static struct mu_par my_print(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {argc}};
 	int i;
 	for(i = 0; i < argc; i++)
@@ -181,7 +176,7 @@ static struct mu_par m_print(struct musl *m, int argc, struct mu_par argv[]) {
  *# Reads a string from the keyboard, with an optional prompt.\n
  *# Trailing newline characters are removed.
  */
-static struct mu_par m_input_s(struct musl *m, int argc, struct mu_par argv[]) {
+static struct mu_par my_input_s(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	char *c;
 	if(argc == 0)
@@ -209,8 +204,7 @@ static struct mu_par m_input_s(struct musl *m, int argc, struct mu_par argv[]) {
  *# {{mode}} can be "r" for reading, "w" for writing, "a" for appending.\n
  *# It returns a number that should be used with {{CLOSE()}}, {{READ()}} and {{WRITE()}}.
  */
-static struct mu_par my_fopen(struct musl *m, int argc, struct mu_par argv[])
-{
+static struct mu_par my_fopen(struct musl *m, int argc, struct mu_par argv[]) {
 	const char *path, *mode;
 	
 	struct mu_par rv; /* Stores the return value of our function */
@@ -240,8 +234,7 @@ static struct mu_par my_fopen(struct musl *m, int argc, struct mu_par argv[])
  *# Closes a previously opened file.\n
  *# {{f}} is the number of the file previously opened with {{OPEN()}}.
  */
-static struct mu_par my_fclose(struct musl *m, int argc, struct mu_par argv[])
-{
+static struct mu_par my_fclose(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
 	int index;
 	struct user_data *data = mu_get_data(m);
@@ -260,8 +253,7 @@ static struct mu_par my_fclose(struct musl *m, int argc, struct mu_par argv[])
  *# Returns 1 if the end of a file has been reached.\n
  *# {{f}} is the number of the file previously opened with {{OPEN()}}.
  */
-static struct mu_par my_feof(struct musl *m, int argc, struct mu_par argv[])
-{
+static struct mu_par my_feof(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
 	int index;
 	struct user_data *data = mu_get_data(m);
@@ -281,8 +273,7 @@ static struct mu_par my_feof(struct musl *m, int argc, struct mu_par argv[])
  *# {{f}} is the number of the file previously opened with {{OPEN()}}.\n
  *# It trims the trailing newline.
  */
-static struct mu_par my_fread(struct musl *m, int argc, struct mu_par argv[])
-{
+static struct mu_par my_fread(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	int index, i;
 	char buffer[INPUT_BUFFER_SIZE];
@@ -322,8 +313,7 @@ static struct mu_par my_fread(struct musl *m, int argc, struct mu_par argv[])
  *# The remaining parameters can be numbers or strings, and will be 
  *# separated by spaces.
  */
-static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[])
-{
+static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
 	int index, i;
 	struct user_data *data = mu_get_data(m);
@@ -348,7 +338,7 @@ static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[])
 /*@ RANDOMIZE([seed])
  *# Initializes the system random number generator with an optional 'seed'
  */
-static struct mu_par m_srand(struct musl *m, int argc, struct mu_par argv[]) {
+static struct mu_par my_srand(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
 		srand(argc?mu_par_num(m, 0):time(NULL));
 	return rv;
@@ -361,7 +351,7 @@ static struct mu_par m_srand(struct musl *m, int argc, struct mu_par argv[]) {
  ** {{RANDOM(N,M)}} - Chooses a random number between N and M
  *}
  */
-static struct mu_par m_rand(struct musl *m, int argc, struct mu_par argv[]) {
+static struct mu_par my_rand(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
 	rv.v.i = rand();
 	if(argc == 1)
@@ -390,7 +380,7 @@ static struct mu_par m_rand(struct musl *m, int argc, struct mu_par argv[]) {
  *#      This implies that on a successful match, the largest index in
  *#      {{_M$[]}} will be one less than the return value of {{REGEX()}}
  */
-static struct mu_par m_regex(struct musl *m, int argc, struct mu_par argv[])
+static struct mu_par my_regex(struct musl *m, int argc, struct mu_par argv[])
 {
 	struct mu_par rv = {mu_int, {0}};
 	const char *pat = mu_par_str(m, 0);
