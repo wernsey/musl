@@ -1,26 +1,28 @@
 /*
- * MUSL: A silly scripting language.
+ * Musl: A silly scripting language.
  * This file allows you to embed the MUSL interpreter into
  * your own applications.
  * See main.c for an example of how this is done.
  * See musl.c for implementation details.
  *
  *! API
- *# Musl provides an API through which it can be embedded into
+ *# {*Musl*} provides an API through which it can be embedded into
  *# other applications in order to provide a scripting interface.\n
  *# About terminology:\n
- *# The {/interpreter/} is contained in the struct musl.\n
- *# It is executed by the {{mu_run()}} function.\n
- *# A {/script/} is a string of text containing MUSL code that
- *# is evaluated by {{mu_run()}} on an interpreter.\n
- *# The interpreter contains variables. Multiple scripts can
+ *{
+ ** The {/interpreter/} is contained in the struct musl.
+ *# It is executed by the {{mu_run()}} function.
+ ** A {/script/} is a string of text containing Musl code that
+ *# is evaluated by {{mu_run()}} on an interpreter.
+ ** The interpreter contains {/variables/}. Multiple scripts can
  *# be executed on the same interpreter (through multiple calls
  *# to {{mu_run()}}) in which case they will have access to the
  *# same variables.\n
- *# The term {/"external function"/} is used to describe a function
- *# written in C that matches the mu_func prototype and is
+ ** The term {/"external function"/} is used to describe a function
+ *# written in C that matches the {{mu_func}} prototype and is
  *# registered with the interpreter through {{mu_add_func()}}
  *# so that it can be called from scripts.
+ *}
  */
 #ifndef MUSL_H
 #define MUSL_H
@@ -34,7 +36,7 @@ extern "C"
 #endif
 	
 /*@ struct musl
- *# Musl interpreter structure */
+ *# {*Musl*} interpreter structure */
 struct musl;
 
 /*@ char *mu_readfile(const char *fname)
@@ -163,15 +165,13 @@ int mu_set_num(struct musl *m, const char *name, int num);
 int mu_get_num(struct musl *m, const char *name);
 
 /*@ int mu_set_str(struct musl *m, const char *name, const char *val)
- *# Sets the value  of a string variable.\n
- *# {/Rememeber that string variable names must end with $./}\n
+ *# Sets the value of a variable to a string.\n
  *# Returns 0 on failure.  
  */
 int mu_set_str(struct musl *m, const char *name, const char *val);
 
 /*@ const char *mu_get_str(struct musl *m, const char *name)
- *# Retrieves the value of a string variable.\n
- *# {/Rememeber that string variable names must end with $./}\n
+ *# Retrieves the value of a variable as a string.\n
  *# Returns {{NULL}} on if the value does not exist.  
  */
 const char *mu_get_str(struct musl *m, const char *name);

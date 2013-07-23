@@ -1415,7 +1415,7 @@ static struct mu_par m_trim(struct musl *m, int argc, struct mu_par argv[]) {
 
 /*@ INSTR(str$, find$) 
  *# Searches for {{find$}} in {{str$}} and returns the index.\n
- *# It returns 0 if find$ was not found.
+ *# It returns 0 if {{find$}} was not found.
  */
 static struct mu_par m_instr(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};	
@@ -1427,8 +1427,8 @@ static struct mu_par m_instr(struct musl *m, int argc, struct mu_par argv[]) {
 }
 
 /*@ DATA(list$, item1, item2, item3, ...) 
- *# Populates an array named 'list'
- *#      A call 
+ *# Populates an array named {{list$}}.\n
+ *# A call 
  *[
  *# DATA("array$", "Alice", "Bob", "Carol") 
  *]

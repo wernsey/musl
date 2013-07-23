@@ -18,7 +18,8 @@ BEGIN {
 /\*#[ \t]*$/ { if(!comment) next; if(!pre) print "<br>"; next;}
 /\*#/ { if(!comment) next; s = substr($0, index($0, "*#") + 2); print filter(s);}
 /\*&/ { if(!comment) next; s = substr($0, index($0, "*&") + 2); print "<tt>" filter(s) "</tt><br>"; next;}
-/\*x/ { if(!comment) next; s = substr($0, index($0, "*x") + 2); print "<br><b>Example:</b><tt>" filter(s) "</tt>"; next;}
+/\*x/ { if(!comment) next; s = substr($0, index($0, "*x") + 2); print "<p><strong>Example:</strong><tt>" filter(s) "</tt></p>"; next;}
+/\*N/ { if(!comment) next; s = substr($0, index($0, "*N") + 2); print "<p><strong>Note:</strong><em>" filter(s) "</em></p>"; next;}
 /\*\[/ { if(!comment) next; pre=1; print "<pre>"; next;}
 /\*]/ { if(!comment) next; pre=0; print "</pre>"; next;}
 /\*\{/ { if(!comment) next; print "<ul>"; next;}
@@ -26,7 +27,6 @@ BEGIN {
 /\*}/ { if(!comment) next; print "</ul>"; next;}
 /\*-/ { if(!comment) next; print "<hr size=2>"; next;}
 /\*=/ { if(!comment) next; print "<hr size=5>"; next;}
-/\*N/ { if(!comment) next; s = substr($0, index($0, "*N") + 2); print "<br><b>Note:</b><i>" filter(s) "</i><br>"; next;}
 
 /\*\// { comment = 0; }
 
@@ -48,7 +48,7 @@ function filter(ss,        j, k1, k2, k3)
 	gsub(/_}/, "</u>", ss);	
 	
 	# Hyperlinks (excuse my primitive regex)
-	gsub(/http:\/\/[a-zA-Z0-9._\/-]+/, "<a href=\"&\">&</a>", ss);
+	gsub(/http:\/\/[a-zA-Z0-9._\/\-%~]+/, "<a href=\"&\">&</a>", ss);
 	
 	# Use a ##word to specify an anchor, eg. ##foo gets translated to <a name="foo">foo</a>
 	while(j = match(ss, /##[A-Za-z0-9_]+/))
