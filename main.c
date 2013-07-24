@@ -42,14 +42,11 @@ static struct mu_par my_fread(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_srand(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_rand(struct musl *m, int argc, struct mu_par argv[]);
-#ifdef WITH_REGEX
 static struct mu_par my_regex(struct musl *m, int argc, struct mu_par argv[]);
-#endif
 static struct mu_par my_call(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_halt(struct musl *m, int argc, struct mu_par argv[]);
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	char *s;
 	int r, i;
 	struct musl *m;
@@ -89,10 +86,8 @@ int main(int argc, char *argv[])
 
 	mu_add_func(m, "randomize", my_srand);
 	mu_add_func(m, "random", my_rand);
-
-#ifdef WITH_REGEX
-	mu_add_func(m, "regex", m_regex);
-#endif
+	
+	mu_add_func(m, "regex", my_regex);
 
 	mu_add_func(m, "call", my_call);
 	mu_add_func(m, "halt", my_halt);
@@ -347,8 +342,8 @@ static struct mu_par my_srand(struct musl *m, int argc, struct mu_par argv[]) {
 /*@ RANDOM() RANDOM(N) RANDOM(N,M)
  *{
  ** {{RANDOM()}} - Chooses a random number
- ** {{RANDOM(N)}} - Chooses a random number between 1 and N
- ** {{RANDOM(N,M)}} - Chooses a random number between N and M
+ ** {{RANDOM(N)}} - Chooses a random number in the range [1, N]
+ ** {{RANDOM(N,M)}} - Chooses a random number in the range [N, M]
  *}
  */
 static struct mu_par my_rand(struct musl *m, int argc, struct mu_par argv[]) {
@@ -361,7 +356,6 @@ static struct mu_par my_rand(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-#ifdef WITH_REGEX
 /*
  * The regex function requires the POSIX regular expression functions
  * regcomp, regexec, regerror, regfree, which may not be available on
@@ -383,6 +377,7 @@ static struct mu_par my_rand(struct musl *m, int argc, struct mu_par argv[]) {
 static struct mu_par my_regex(struct musl *m, int argc, struct mu_par argv[])
 {
 	struct mu_par rv = {mu_int, {0}};
+#ifdef WITH_REGEX
 	const char *pat = mu_par_str(m, 0);
 	const char *str = mu_par_str(m, 1);
 	regex_t preg;
@@ -424,9 +419,11 @@ static struct mu_par my_regex(struct musl *m, int argc, struct mu_par argv[])
 		rv.v.i = r;
 	}
 	regfree(&preg);
+#else
+	mu_throw(m, "This version of Musl was compiled without Regex support");
+#endif
 	return rv;
 }
-#endif
 
 /*@ CALL(label$)
  *# {{CALL("label")}} is the same as {{GOSUB label}}.\n
@@ -449,7 +446,7 @@ static struct mu_par my_call(struct musl *m, int argc, struct mu_par argv[]) {
 /*@ HALT()
  *# Halts the interpreter immediately.\n
  *# Calling this is equivalent to executing an {{END}} statement.\n
- *# It is mainly here to test and demo the {{mu_halt()}} API function.
+ *# {/It is mainly here to test and demo the {{mu_halt()}} API function./}
  */
 static struct mu_par my_halt(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
