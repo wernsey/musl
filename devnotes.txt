@@ -48,6 +48,12 @@ GSUB$() - Like Awk's gsub() function (instead of replace$() above)
 
 Speaking of Awk, how about a function AWK(line$, [delim$]) that takes line$ and splits it into columns in the _C[i], so that a Musl script can do some of the same work as Awk. It returns the number of columns found in the line. _C["length"] should be the same as the arrays filled in by DATA() 
 
+Actually, the above is just a SPLIT() function. I would actually like to have functions like ColdFusion's List functions. They are very much in the spirit of Musl.
+
 PUSH() and POP() functions that store variables inside some internal stack temporarily (useful for GOSUBs, because they can emulate local variables). These would benefit if the language was dynamically/weakly typed because as it stands one would need a POP() and POP$() function.
+
+ASC() and CHR() for converting between characters and numbers: ASC('A') is 65 and CHR(65) is 'A'
+
+How about a Oracle-like DECODE() function (see http://www.techonthenet.com/oracle/functions/decode.php for details).
 
 I'd also like to have a feature to dump all the variables somewhere for debugging Musl programs. It should be an API function and a Built-in function.

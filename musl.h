@@ -188,6 +188,12 @@ void mu_set_data(struct musl *m, void *data);
  */
 void *mu_get_data(struct musl *m);
 
+/*@ int mu_valid_id(const char *id)
+ *# Returns 1 if {{id}} is a valid Musl identifier,
+ *# otherwise it returns 0.
+ */
+int mu_valid_id(const char *id);
+
 #if defined(__cplusplus) || defined(c_plusplus)
 } /* extern "C" */
 #endif

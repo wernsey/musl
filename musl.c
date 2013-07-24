@@ -111,7 +111,7 @@ struct musl {
  * Operators and Keywords
  */
 
-#define OPERATORS	"=<>~+-*/%&()[],:"
+#define OPERATORS	"=<>~+-*/%&()[],:@"
 
 #define T_END		0
 #define T_IDENT		1  /* Identifiers for normal variables eg "foo" */
@@ -1269,6 +1269,17 @@ const char *mu_par_str(struct musl *m, int n) {
 	return m->argv[n].v.s;
 }
 
+int mu_valid_id(const char *id) {
+	if(!isalpha(id[0]))
+		return 0;
+	while(id[0])
+		if(!isalnum(id[0]) && !strchr("_$", id[0])) 
+			return 0;
+		else
+			id++;
+	return 1;
+}
+
 /*
  * Standard functions
  */
@@ -1468,19 +1479,15 @@ static struct mu_par m_iff(struct musl *m, int argc, struct mu_par argv[]) {
 static struct mu_par m_data(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
 	int i, idx;
-	char *c, name[TOK_SIZE];
+	char name[TOK_SIZE];
 	const char *aname;
 
 	if(argc < 1)
 		mu_throw(m, "DATA() must take at least one parameter");
-	if(!isalpha(argv[0].v.s[0]))
-		mu_throw(m, "DATA()'s first parameter must be a valid identifier");
-	for(c = argv[0].v.s; c[0]; c++)
-		if(!isalnum(c[0]) && !strchr("_$", c[0])) {
-			mu_throw(m, "DATA()'s first parameter must be a valid identifier");
-		}
-
 	aname = mu_par_str(m, 0);
+	if(!mu_valid_id(aname))
+		mu_throw(m, "DATA()'s first parameter must be a valid identifier");
+		
 	snprintf(name, TOK_SIZE, "%s[length]", aname);
 	idx = mu_get_num(m, name);
 
@@ -1498,24 +1505,30 @@ static struct mu_par m_data(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 /*@ MAP("mymap", key1, val1, key2, val2, ...)
- *# Initializes {{mymap$}} as an array of key-value pairs.\n
+ *# Initializes {{mymap}} as an array of key-value pairs.\n
+ *# A call
+ *[
+ *# MAP("mymap", "Alice", 111, "Bob", 222, "Carol", 333)
+ *]
+ *# is equivalent to the statements:
+ *[
+ *# LET mymap["Alice"] = 111
+ *# LET mymap["Bob"] = 222
+ *# LET mymap["Carol"] = 333
+ *]
  */
 static struct mu_par m_map(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
 	int i = 1;
-	char *c, name[TOK_SIZE];
+	char name[TOK_SIZE];
 	const char *aname;
 
 	if(argc < 1 || argc % 2 == 0)
 		mu_throw(m, "MAP() must take an odd number of parameters");
-	if(!isalpha(argv[0].v.s[0]))
-		mu_throw(m, "MAP()'s first parameter must be a valid identifier");
-	for(c = argv[0].v.s; c[0]; c++)
-		if(!isalnum(c[0]) && !strchr("_$", c[0])) {
-			mu_throw(m, "MAP()'s first parameter must be a valid identifier");
-		}
 	aname = mu_par_str(m, 0);
-
+	if(!mu_valid_id(aname))
+		mu_throw(m, "MAP()'s first parameter must be a valid identifier");
+		
 	while(i < argc) {
 		const char *key = mu_par_str(m, i++);
 		const char *val = mu_par_str(m, i++);
