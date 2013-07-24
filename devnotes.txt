@@ -18,6 +18,8 @@ DIM is not needed (and not implemented) because of the way these hash tables are
 '&' is the string concatenation operator.
 '~' is the not-equals operator.
 
+DATA is alsoo a function, rather than a statement.
+
 Things I would lake to change (when I find time):
 =================================================
 
@@ -40,15 +42,11 @@ ToDo Built-In Functions:
 
 Ideas for built-in functions that may be useful go in this section.
 
-We need a MAP() function that works kinda like DATA(), except, MAP("aaa", "Alice", 111, "Bob", 222, "Carol", 333) maps alice to 111, Bob to 222 etc in the array aaa.
-
 Replace$(str$, find, repl) - Replaces occurances of 'find' with 'repl' in str
 
 GSUB$() - Like Awk's gsub() function (instead of replace$() above)
 
 Speaking of Awk, how about a function AWK(line$, [delim$]) that takes line$ and splits it into columns in the _C[i], so that a Musl script can do some of the same work as Awk. It returns the number of columns found in the line. _C["length"] should be the same as the arrays filled in by DATA() 
-
-IIF(expr, a, b) which stands in for ?: (though it works slightly differently)
 
 PUSH() and POP() functions that store variables inside some internal stack temporarily (useful for GOSUBs, because they can emulate local variables). These would benefit if the language was dynamically/weakly typed because as it stands one would need a POP() and POP$() function.
 

@@ -6,15 +6,15 @@
  *#
  *@ License
  *# Author: Werner Stoop.\n
- *# These sources are provided under the terms of the unlicense: 
+ *# These sources are provided under the terms of the unlicense:
  *[
  *# This is free and unencumbered software released into the public domain.
- *# 
+ *#
  *# Anyone is free to copy, modify, publish, use, compile, sell, or
  *# distribute this software, either in source code form or as a compiled
  *# binary, for any purpose, commercial or non-commercial, and by any
  *# means.
- *# 
+ *#
  *# In jurisdictions that recognize copyright laws, the author or authors
  *# of this software dedicate any and all copyright interest in the
  *# software to the public domain. We make this dedication for the benefit
@@ -22,7 +22,7 @@
  *# successors. We intend this dedication to be an overt act of
  *# relinquishment in perpetuity of all present and future rights to this
  *# software under copyright law.
- *# 
+ *#
  *# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  *# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  *# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -30,11 +30,11 @@
  *# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  *# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *# OTHER DEALINGS IN THE SOFTWARE.
- *# 
+ *#
  *# For more information, please refer to <http://unlicense.org/>
  *]
  */
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,10 +81,10 @@ typedef struct var* hash_table[HASH_SIZE];
 
 enum types {nil, num, str, oper, go};
 
-struct musl {	
+struct musl {
 	const char *s, *last, *start;
 	char token[TOK_SIZE];
-	
+
 	hash_table vars,	/* variables */
 		labels,			/* Labels */
 		funcs;			/* Functions */
@@ -93,17 +93,17 @@ struct musl {
 	struct mu_par *argv;
 
 	int active;
-	
+
 	const char *gosub_stack[MAX_GOSUB];
 	int gosub_sp;
-	
+
 	const char *for_stack[MAX_FOR];
 	int for_sp;
-	
+
 	jmp_buf on_error;
-	char error_msg[MAX_ERROR_TEXT]; 
+	char error_msg[MAX_ERROR_TEXT];
 	char error_text[MAX_ERROR_TEXT];
-	
+
 	void *user; /* Stores arbitrary user data */
 };
 
@@ -159,7 +159,7 @@ struct {
 				{NULL, 0}};
 
 static int iskeyword(const char *s) {
-	int i;		
+	int i;
 	for(i=0;keywords[i].name != NULL;i++)
 		if(!strcmp(keywords[i].name, s))
 			return keywords[i].val;
@@ -172,7 +172,7 @@ static void *mu_alloc(struct musl *m, size_t len) {
 	return p;
 }
 
-/* 
+/*
  * Lookup-tables handling
  */
 
@@ -197,7 +197,7 @@ static void init_table(hash_table tbl) {
 static void free_element(struct var* v, void (*cfun)(struct var *)) {
 	if(!v) return;
 	free_element(v->next, cfun);
-	if(cfun) cfun(v);	
+	if(cfun) cfun(v);
 	free(v->name);
 	free(v);
 }
@@ -255,7 +255,7 @@ void mu_throw(struct musl *m, const char *msg, ...) {
 	va_start (arg, msg);
   	vsnprintf (m->error_msg, MAX_ERROR_TEXT-1, msg, arg);
   	va_end (arg);
-  
+
 	longjmp(m->on_error, -1);
 }
 
@@ -289,23 +289,23 @@ static struct musl *tok_reset(struct musl *m) {
 }
 
 static int tokenize(struct musl *m) {
-	char *t;	
+	char *t;
 	if(!m->s) return T_END;
-	
+
 	m->last = m->s;
-	
-whitespace:	
+
+whitespace:
 	while(isspace(m->s[0]))
-		if((m->s++)[0] == '\n') 
+		if((m->s++)[0] == '\n')
 			return T_LF;
-	
+
 	if(m->s[0] == '#') {
 		while(m->s[0] != '\n')
 			if((m->s++)[0] == '\0')
 				return T_END;
 		return T_LF;
-	}	
-	
+	}
+
 	if(m->s[0] == '\\') {
 		do {
 			m->s++;
@@ -316,7 +316,7 @@ whitespace:
 		m->s++;
 		goto whitespace;
 	}
-	
+
 	m->last = m->s;
 
 	if(!m->s[0])
@@ -327,7 +327,7 @@ whitespace:
 			if(!m->s[0])
 				mu_throw(m, "Unterminated string");
 			else if(t - m->token > TOK_SIZE - 2)
-				mu_throw(m, "Token too long");			
+				mu_throw(m, "Token too long");
 			else if(m->s[0] == '\\') {
 				switch(m->s[1])
 				{
@@ -343,7 +343,7 @@ whitespace:
 		}
 		m->s++;
 		t[0] = '\0';
-		return T_STRING;		
+		return T_STRING;
 	} else if(tolower(m->s[0]) == 'r' && (m->s[1] == '"' || m->s[1] == '\'')) {
 		/* Python inspired "raw" string */
 		char term = m->s[1];
@@ -351,12 +351,12 @@ whitespace:
 			if(!m->s[0])
 				mu_throw(m, "Unterminated string");
 			else if(t - m->token > TOK_SIZE - 2)
-				mu_throw(m, "Token too long");			
+				mu_throw(m, "Token too long");
 			*t++ = *m->s++;
 		}
 		m->s++;
 		t[0] = '\0';
-		return T_STRING;		
+		return T_STRING;
 	} else if(isalpha(m->s[0]) || m->s[0] == '_') {
 		int k, v = T_IDENT;
 		for(t = m->token; isalnum(m->s[0]) || m->s[0] == '_' || m->s[0] == '$';) {
@@ -382,24 +382,24 @@ char *mu_readfile(const char *fname) {
 	FILE *f;
 	long len,r;
 	char *str;
-	
-	if(!(f = fopen(fname, "rb")))	
+
+	if(!(f = fopen(fname, "rb")))
 		return NULL;
-	
+
 	fseek(f, 0, SEEK_END);
 	len = ftell(f);
 	rewind(f);
-	
+
 	if(!(str = malloc(len+2)))
-		return NULL;	
+		return NULL;
 	r = fread(str, 1, len, f);
-	
+
 	if(r != len) {
 		free(str);
 		return NULL;
 	}
-	
-	fclose(f);	
+
+	fclose(f);
 	str[len] = '\0';
 	return str;
 }
@@ -407,7 +407,7 @@ char *mu_readfile(const char *fname) {
 /*
  *@ Syntax
  *# The following describes the syntax of the interpreter.
- *# Consult the examples if it is unclear. 
+ *# Consult the examples if it is unclear.
  *[
  */
 
@@ -422,7 +422,7 @@ static struct mu_par add_expr(struct musl *m);
 static struct mu_par mul_expr(struct musl *m);
 static struct mu_par uexpr(struct musl *m);
 static struct mu_par atom(struct musl *m);
-		
+
 static int scan_labels(struct musl *m){
 	const char *store = m->s;
 	int t = T_END, ft = 1, c, ln = -1;
@@ -454,7 +454,7 @@ static int scan_labels(struct musl *m){
 		}
 		ft = 0;
 	}
-	
+
 	m->s = store;
 	return 1;
 }
@@ -493,9 +493,9 @@ static int program(struct musl *m) {
 	int t, n = 0, ft = 1;
 	const char *s;
 	while((t=tokenize(m)) != T_END && t != T_KEND) {
-		if(ft || t == T_LF) {		
-			if(!ft) t = tokenize(m);						
-			if(t == T_IDENT) {				
+		if(ft || t == T_LF) {
+			if(!ft) t = tokenize(m);
+			if(t == T_IDENT) {
 				const char *x = m->last;
 				if(tokenize(m) != ':') {
 					m->s = x;
@@ -503,10 +503,10 @@ static int program(struct musl *m) {
 			} else if(t != T_NUMBER) {
 				tok_reset(m);
 			}
-		} else if((s = stmt(tok_reset(m))) != NULL) {			
+		} else if((s = stmt(tok_reset(m))) != NULL) {
 			m->s = s;
 			m->last = NULL;
-			
+
 			/* To return to the C domain when we're in
 			 * a call to mu_gosub(): */
 			if(m->s == NULL) return n;
@@ -528,25 +528,25 @@ static int program(struct musl *m) {
  *#        | FOR ident = expr TO expr [STEP expr] DO [<LF>+] stmts [<LF>+] NEXT
  *#        | END
  */
-static const char *stmt(struct musl *m) {  
+static const char *stmt(struct musl *m) {
 	int t, u, has_let=0, q;
 	char name[TOK_SIZE], buf[TOK_SIZE];
 	struct var *v;
 	struct mu_par rhs;
-	
+
 	if((t = tokenize(m)) == T_IDENT || t == T_LET) {
 		if(t == T_LET && (has_let = 1) && (t = tokenize(m)) != T_IDENT)
 			mu_throw(m, "Identifier expected");
-		
+
 		strcpy(buf, m->token);
 		if(tokenize(m) == '[') {
 			has_let = 1;
-			
+
 			rhs = expr(m);
 			par_as_str(&rhs);
 			snprintf(name, TOK_SIZE, "%s[%s]", buf, rhs.v.s);
 			free(rhs.v.s);
-			
+
 			if(tokenize(m) != ']')
 				mu_throw(m, "Missing ']'");
 		} else {
@@ -554,7 +554,7 @@ static const char *stmt(struct musl *m) {
 			tok_reset(m);
 		}
 
-		if((u = tokenize(m)) == '=') {			
+		if((u = tokenize(m)) == '=') {
 			rhs = expr(m);
 			if(rhs.type == mu_str) {
 				if(m->active && !mu_set_str(m, name, rhs.v.s))
@@ -563,33 +563,33 @@ static const char *stmt(struct musl *m) {
 			} else {
 				if(m->active && !mu_set_num(m, name, rhs.v.i))
 					mu_throw(m, "Out of memory");
-			}			
+			}
 		} else if(!has_let && u == '(') {
 			rhs = fparams(name, m);
-			if(rhs.type == mu_str)			
+			if(rhs.type == mu_str)
 				free(rhs.v.s);
 		}
 	} else if(t == T_IF) {
 		int save = m->active;
 		const char *result;
 		rhs = expr(m);
-		
-		if(m->active) 
+
+		if(m->active)
 			m->active = par_as_int(&rhs);
-		
+
 		if(tokenize(m) != T_THEN)
 			mu_throw(m, "THEN expected");
-		
+
 		while(tokenize(m) == T_LF); /* Allow newlines after THEN */
 		tok_reset(m);
-				
+
 		result = stmt(m);
 		m->active = save;
-		if(result) 
+		if(result)
 			return result;
-		
+
 	} else if(t == T_GOTO || t == T_GOSUB) {
-		
+
 		if((u=tokenize(m)) != T_IDENT && u != T_NUMBER)
 			mu_throw(m, "Label expected");
 
@@ -598,8 +598,8 @@ static const char *stmt(struct musl *m) {
 				mu_throw(m, "GOSUB stack overflow");
 			m->gosub_stack[m->gosub_sp++] = m->s;
 		}
-		
-		if(!(v = find_var(m->labels, m->token))) 
+
+		if(!(v = find_var(m->labels, m->token)))
 			mu_throw(m, "GOTO/GOSUB to undefined label '%s'", m->token);
 		if(m->active)
 			return v->v.c;
@@ -609,7 +609,7 @@ static const char *stmt(struct musl *m) {
 		if(m->active) {
 			m->s = m->gosub_stack[--m->gosub_sp];
 			m->last = NULL;
-			
+
 			/* special case when for when we're in a mu_gosub() */
 			if(m->s == NULL)
 				return NULL;
@@ -620,14 +620,14 @@ static const char *stmt(struct musl *m) {
 		par_as_int(&rhs);
 		if((u = tokenize(m)) != T_GOTO && u != T_GOSUB)
 			mu_throw(m, "GOTO or GOSUB expected");
-		
+
 		do {
 			if((q=tokenize(m)) != T_IDENT && q != T_NUMBER)
 				mu_throw(m, "Label expected");
-			
+
 			if(m->active && j++ == rhs.v.i) {
-				if(!(v = find_var(m->labels, m->token))) 
-					mu_throw(m, "ON .. GOTO/GOSUB to undefined label '%s'", m->token);		
+				if(!(v = find_var(m->labels, m->token)))
+					mu_throw(m, "ON .. GOTO/GOSUB to undefined label '%s'", m->token);
 				if(u == T_GOSUB) {
 					if(m->gosub_sp >= MAX_GOSUB - 1)
 						mu_throw(m, "GOSUB stack overflow");
@@ -643,42 +643,42 @@ static const char *stmt(struct musl *m) {
 		tok_reset(m);
 	} else if(t == T_FOR) {
 		int start;
-		
+
 		if(m->for_sp >= MAX_FOR)
 			mu_throw(m, "FOR stack overflow");
 		m->for_stack[m->for_sp++] = m->s;
-		
+
 		if(tokenize(m) != T_IDENT)
 			mu_throw(m, "Identifier expected after FOR");
 		strcpy(buf, m->token);
 		if(tokenize(m) != '=')
 			mu_throw(m, "'=' expected");
-				
+
 		rhs = expr(m);
 		start = par_as_int(&rhs);
-		
+
 		if(tokenize(m) != T_TO)
 			mu_throw(m, "TO expected");
 		expr(m);
-		
+
 		if(tokenize(m) == T_STEP)
 			expr(m);
 		else
 			tok_reset(m);
-		
+
 		if(tokenize(m) != T_DO)
 			mu_throw(m, "DO expected");
-		
+
 		if(!m->active) {
 			m->for_sp--;
 			if(tokenize(m) != T_LF)
 				mu_throw(m, "<LF> expected");
-			
+
 			while((t=tokenize(m)) != T_NEXT) {
-				const char *x = m->last;	
-				if(t == T_NUMBER || t == T_LF) 
+				const char *x = m->last;
+				if(t == T_NUMBER || t == T_LF)
 					continue;
-				else if(t == T_IDENT) {				
+				else if(t == T_IDENT) {
 					if(tokenize(m) == ':') {
 						continue;
 					} else {
@@ -693,40 +693,40 @@ static const char *stmt(struct musl *m) {
 	} else if(t == T_NEXT) {
 		if(m->active) {
 			int start, stop, step, idx;
-			const char *save = m->s;					
+			const char *save = m->s;
 			if(m->for_sp < 1)
 				mu_throw(m, "FOR stack underflow");
 			m->s = m->for_stack[m->for_sp - 1];
-				
+
 			if(tokenize(m) != T_IDENT)
 				mu_throw(m, "Identifier expected after FOR");
 			strcpy(buf, m->token);
 			if(tokenize(m) != '=')
 				mu_throw(m, "'=' expected");
-			
+
 			rhs = expr(m);
 			start = par_as_int(&rhs);
-			
+
 			if(tokenize(m) != T_TO)
 				mu_throw(m, "TO expected");
-						
+
 			rhs = expr(m);
 			stop = par_as_int(&rhs);
-			
+
 			if(tokenize(m) == T_STEP) {
 				rhs = expr(m);
 				step = par_as_int(&rhs);
 			} else {
 				tok_reset(m);
-				if(start < stop) 
+				if(start < stop)
 					step = 1;
 				else
 					step = -1;
 			}
-			
+
 			if(tokenize(m) != T_DO)
 				mu_throw(m, "DO expected");
-			
+
 			idx = mu_get_num(m, buf);
 			if(idx == stop) {
 				m->s = save;
@@ -743,43 +743,43 @@ static const char *stmt(struct musl *m) {
 		return NULL;
 	} else
 		mu_throw(m, "Statement expected (%d)", t);
-	
+
 	if((t=tokenize(m)) == ':') {
 		while(tokenize(m) == T_LF);
 		tok_reset(m);
 		return stmt(m);
 	}
-	
+
 	if(t != T_LF && t != T_KEND && t != T_END)
 		mu_throw(m, "':' or <LF> expected (%d)", t);
-	
-	tok_reset(m);	
+
+	tok_reset(m);
 	return NULL;
 }
 
 /*# fparams ::= [expr ',' expr ',' ...]
- */ 
+ */
 static struct mu_par fparams(const char *name, struct musl *m) {
 	int t, i = 0;
 	struct mu_par params[MAX_PARAMS], rv = {mu_int, {0}};
 	struct var *v;
-			
+
 	while((t = tokenize(m)) != ')') {
 		if(i >= MAX_PARAMS)
 			mu_throw(m, "Too many parameters to function %s", name);
 
-		params[i] = expr(tok_reset(m));			
-		
+		params[i] = expr(tok_reset(m));
+
 		i++;
 		if((t = tokenize(m)) == ')')
 			break;
 		else if(t != ',')
 			mu_throw(m, "Expected ')'");
-	}				
+	}
 
 	v = find_var(m->funcs, name);
-	if(!v || !v->v.fun) 
-		mu_throw(m, "Call to undefined function %s()", name);	
+	if(!v || !v->v.fun)
+		mu_throw(m, "Call to undefined function %s()", name);
 
 	m->argc = i;
 	m->argv = params;
@@ -797,10 +797,10 @@ static struct mu_par fparams(const char *name, struct musl *m) {
  */
 static struct mu_par expr(struct musl *m) {
 	struct mu_par lhs = and_expr(m);
-	
+
 	if(tokenize(m) == T_OR) {
 		int n = par_as_int(&lhs);
-		do {		
+		do {
 			struct mu_par rhs = and_expr(m);
 			n = n | par_as_int(&rhs);
 		} while(tokenize(m) == T_OR);
@@ -813,9 +813,9 @@ static struct mu_par expr(struct musl *m) {
 
 /*# and_expr ::= not_expr [AND not_expr]*
  */
-static struct mu_par and_expr(struct musl *m) {	
+static struct mu_par and_expr(struct musl *m) {
 	struct mu_par lhs = not_expr(m);
-	if(tokenize(m) == T_AND) {	
+	if(tokenize(m) == T_AND) {
 		int n = par_as_int(&lhs);
 		do {
 			struct mu_par rhs = not_expr(m);
@@ -824,7 +824,7 @@ static struct mu_par and_expr(struct musl *m) {
 		assert(lhs.type == mu_int);
 		lhs.v.i = n;
 	}
-	
+
 	tok_reset(m);
 	return lhs;
 }
@@ -837,8 +837,8 @@ static struct mu_par not_expr(struct musl *m) {
 		par_as_int(&lhs);
 		lhs.v.i = !lhs.v.i;
 		return lhs;
-	}		
-	tok_reset(m);	
+	}
+	tok_reset(m);
 	return comp_expr(m);
 }
 
@@ -846,7 +846,7 @@ static struct mu_par not_expr(struct musl *m) {
  */
 static struct mu_par comp_expr(struct musl *m) {
 	int t, n, r;
-	struct mu_par lhs = cat_expr(m);	
+	struct mu_par lhs = cat_expr(m);
 	if((t=tokenize(m)) == '=' || t == '<' || t == '>' || t == '~') {
 		struct mu_par rhs = cat_expr(m);
 		if(lhs.type == mu_str) {
@@ -859,7 +859,7 @@ static struct mu_par comp_expr(struct musl *m) {
 			lhs.v.i = n;
 		} else {
 			par_as_int(&rhs);
-			if(t == '=')		
+			if(t == '=')
 				n = lhs.v.i == rhs.v.i;
 			else if(t == '<')
 				n = lhs.v.i < rhs.v.i;
@@ -868,11 +868,11 @@ static struct mu_par comp_expr(struct musl *m) {
 			else if(t == '~')
 				n = lhs.v.i != rhs.v.i;
 			lhs.v.i = n;
-		}		
-		
+		}
+
 	} else
 		tok_reset(m);
-	
+
 	return lhs;
 }
 
@@ -882,28 +882,28 @@ static struct mu_par cat_expr(struct musl *m) {
 	int t;
 	struct mu_par lhs = add_expr(m);
 	if((t = tokenize(m)) == '&') {
-		
+
 		do {
-			char *s = par_as_str(&lhs), *t;			
+			char *s = par_as_str(&lhs), *t;
 			struct mu_par rhs = add_expr(m);
-			
+
 			par_as_str(&rhs);
-			
+
 			t = malloc(strlen(s) + strlen(rhs.v.s) + 1);
-			if(!t) 
+			if(!t)
 				mu_throw(m, "Out of memory");
-			
+
 			strcpy(t,s);
 			strcat(t,rhs.v.s);
 			assert(strlen(t) == strlen(s) + strlen(rhs.v.s));
-			
+
 			free(lhs.v.s);
 			lhs.v.s = t;
-			
+
 		} while((t = tokenize(m)) == '&');
-		
-		
-		
+
+
+
 	}
 	tok_reset(m);
 	return lhs;
@@ -942,7 +942,7 @@ static struct mu_par mul_expr(struct musl *m) {
 			int r = par_as_int(&rhs);
 			if(t == '*')
 				n *= r;
-			else if(t == '/') {				
+			else if(t == '/') {
 				if(!r)
 					mu_throw(m, "Divide by zero");
 				n /= r;
@@ -951,7 +951,7 @@ static struct mu_par mul_expr(struct musl *m) {
 					mu_throw(m, "Divide by zero");
 				n %= r;
 			}
-		} while((t = tokenize(m)) == '*' || t == '/' || t  == '%');		
+		} while((t = tokenize(m)) == '*' || t == '/' || t  == '%');
 		assert(lhs.type == mu_int);
 		lhs.v.i = n;
 	}
@@ -975,39 +975,39 @@ static struct mu_par uexpr(struct musl *m) {
 }
 
 /*# atom ::= '(' expr ')'
- *#        |  ident 
- *#        |  ident '[' expr ']' 
+ *#        |  ident
+ *#        |  ident '[' expr ']'
  *#        |  ident '(' [fparams] ')'
  *#        |  number
  *#        |  string
  *]
  */
-static struct mu_par atom(struct musl *m) {	
+static struct mu_par atom(struct musl *m) {
 	int t, u;
 	struct var *v;
 	struct mu_par ret = {mu_int, {0}};
-	
+
 	if((t = tokenize(m)) == '(') {
 		struct mu_par lhs = expr(m);
 		if(tokenize(m) != ')')
 			mu_throw(m, "Missing ')'");
 		return lhs;
 	} else if(t == T_IDENT) {
-		
+
 		char name[TOK_SIZE], buf[TOK_SIZE];
 		strcpy(buf, m->token);
-		
+
 		if((u=tokenize(m)) == '(')
 			return fparams(buf, m);
 		else if(u == '[') {
-			
+
 			struct mu_par rhs = expr(m);
 			par_as_str(&rhs);
 			snprintf(name, TOK_SIZE, "%s[%s]", buf, rhs.v.s);
 			free(rhs.v.s);
-			
+
 			if(tokenize(m) != ']')
-				mu_throw(m, "Missing ']'");			
+				mu_throw(m, "Missing ']'");
 		} else {
 			strcpy(name, buf);
 			tok_reset(m);
@@ -1018,25 +1018,25 @@ static struct mu_par atom(struct musl *m) {
 			if(!m->active) return ret;
 			mu_throw(m, "Read from undefined variable '%s'", name);
 		}
-		
+
 		ret.type = v->type;
 		if(v->type == mu_int) {
 			ret.v.i = v->v.i;
 		} else {
 			ret.v.s = strdup(v->v.s);
 		}
-		
+
 		return ret;
 	} else if(t == T_NUMBER) {
 		ret.type = mu_int;
-		ret.v.i = atoi(m->token); 
+		ret.v.i = atoi(m->token);
 		return ret;
 	} else if(t == T_STRING) {
 		ret.type = mu_str;
 		ret.v.s = strdup(m->token);
 		return ret;
-	} 
-	
+	}
+
 	mu_throw(m, "Value expected");
 	return ret; /* Satisfy the compiler */
 }
@@ -1069,7 +1069,7 @@ int mu_run(struct musl *m, const char *s) {
 	m->s = s;
 	m->start = s;
 	m->last = NULL;
-	
+
 	if(setjmp(m->on_error) != 0) {
 		int i;
 		tok_reset(m);
@@ -1079,13 +1079,13 @@ int mu_run(struct musl *m, const char *s) {
 		return 0;
 	}
 
-	scan_labels(m);	
+	scan_labels(m);
 	program(m);
-	
+
 	/* Delete the labels, case another script is run */
 	clear_table(m->labels, NULL);
 	init_table(m->labels);
-	return 1; 
+	return 1;
 }
 
 int mu_gosub(struct musl *m, const char *label) {
@@ -1093,61 +1093,61 @@ int mu_gosub(struct musl *m, const char *label) {
 	volatile struct var *v;
 	volatile jmp_buf save_jmp;
 	volatile int rv = 0, save_sp;
-		
+
 	/* Find the label we're supposed to go to */
 	if(!(v = find_var(m->labels, label))) {
 		snprintf (m->error_msg, MAX_ERROR_TEXT-1, "GOSUB to undefined label");
 		return 0;
 	}
-		
-	/* Setup the GOSUB stack */	
+
+	/* Setup the GOSUB stack */
 	if(m->gosub_sp >= MAX_GOSUB - 1) {
 		snprintf (m->error_msg, MAX_ERROR_TEXT-1, "GOSUB stack overflow");
 		return 0;
 	}
-		
+
 	/* Set the location in the program */
 	save = m->s; /* Save current location */
 	m->s = v->v.c; /* Set the new location */
 	m->last = NULL;
 	save_sp = m->gosub_sp;
-	
+
 	/* Push null onto the stack; Special case to show that
 	 * the script needs to return to the C domain
 	 */
 	m->gosub_stack[m->gosub_sp++] = NULL;
-	
+
 	/* Save the old error handler and set the new one */
 	memcpy(&save_jmp, &m->on_error, sizeof save_jmp);
-	
+
 	if(setjmp(m->on_error) != 0) {
 		int i;
 		tok_reset(m);
 		for(i = 0; i < MAX_ERROR_TEXT - 1 && m->s[i] != '\0' && m->s[i] != '\n'; i++)
 			m->error_text[i] = m->s[i];
 		m->error_text[i] = '\0';
-		
+
 		/* Need to restore the old error handler */
 		goto restore;
 	}
-	
+
 	/* Run the subroutine */
 	program(m);
 	rv  = 1;
-	
+
 restore:
 	/* Restore everything */
 	memcpy(&m->on_error, &save_jmp, sizeof save_jmp);
 	m->s = save;
 	m->last = NULL;
 	m->gosub_sp = save_sp;
-	
+
 	/* Return success */
 	return rv;
 }
 
 void mu_halt(struct musl *m) {
-	m->s = NULL;	
+	m->s = NULL;
 	m->last = NULL;
 }
 
@@ -1171,7 +1171,7 @@ void mu_cleanup(struct musl *m) {
  */
 int mu_set_num(struct musl *m, const char *name, int num) {
 	struct var *v = find_var(m->vars, name);
-		
+
 	if(!v) {
 		if(!(v = new_var(name))) return 0;
 		put_var(m->vars, v);
@@ -1180,16 +1180,16 @@ int mu_set_num(struct musl *m, const char *name, int num) {
 	}
 	v->type = mu_int;
 	v->v.i = num;
-	return 1;						
+	return 1;
 }
 
 int mu_get_num(struct musl *m, const char *name) {
 	struct var *v = find_var(m->vars, name);
-	if(!v) 
+	if(!v)
 		return 0;
-	else if(v->type == mu_str) 
+	else if(v->type == mu_str)
 		return atoi(v->v.s);
-	return v->v.i;						
+	return v->v.i;
 }
 
 int mu_set_str(struct musl *m, const char *name, const char *val) {
@@ -1202,24 +1202,24 @@ int mu_set_str(struct musl *m, const char *name, const char *val) {
 	}
 	v->type = mu_str;
 	v->v.s = strdup(val);
-	
-	return v->v.s != NULL;						
+
+	return v->v.s != NULL;
 }
 
 const char *mu_get_str(struct musl *m, const char *name) {
-	struct var *v = find_var(m->vars, name);	
-	if(!v) 
+	struct var *v = find_var(m->vars, name);
+	if(!v)
 		return NULL;
-	
+
 	if(v->type == mu_int) {
 		char *buffer = malloc(20);
 		if(!buffer) return NULL;
 		sprintf(buffer, "%d", v->v.i);
 		v->type = mu_str;
 		v->v.s = buffer;
-	}	
-	
-	return v->v.s;						
+	}
+
+	return v->v.s;
 }
 
 void mu_set_data(struct musl *m, void *data) {
@@ -1235,8 +1235,8 @@ void *mu_get_data(struct musl *m) {
  */
 int mu_add_func(struct musl *m, const char *name, mu_func fun) {
 	struct var *v = find_var(m->funcs, name);
-	if(!v) {					
-		if(!(v = new_var(name))) return 0;	
+	if(!v) {
+		if(!(v = new_var(name))) return 0;
 		put_var(m->funcs, v);
 	}
 	v->v.fun = fun;
@@ -1258,9 +1258,9 @@ int mu_par_num(struct musl *m, int n) {
 const char *mu_par_str(struct musl *m, int n) {
 	if(n >= m->argc)
 		mu_throw(m, "Too few parameters to function");
-	if(m->argv[n].type == mu_int) {	
+	if(m->argv[n].type == mu_int) {
 		char *buffer = malloc(20);
-		if(!buffer) 
+		if(!buffer)
 			mu_throw(m, "Out of memory");
 		sprintf(buffer, "%d", m->argv[n].v.i);
 		m->argv[n].type = mu_str;
@@ -1276,19 +1276,19 @@ const char *mu_par_str(struct musl *m, int n) {
 /*@ Built-In Functions
  *# The Following built-in functions are available to all scripts.
  *#
- * When implementing your own functions, keep in mind that functions 
+ * When implementing your own functions, keep in mind that functions
  * that return strings should allocate those strings on the heap,
  * because Musl will call free() on them at a later stage.
  */
 
-/*@ VAL(x$) 
+/*@ VAL(x$)
  *# Converts the string {{x$}} to a number. */
 static struct mu_par m_val(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {mu_par_num(m, 0)}};
 	return rv;
 }
 
-/*@ STR$(x) 
+/*@ STR$(x)
  *# Converts the number {{x}} to a string. */
 static struct mu_par m_str(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
@@ -1297,28 +1297,28 @@ static struct mu_par m_str(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ LEN(x$) 
+/*@ LEN(x$)
  *# Returns the length of string {{x$}} */
 static struct mu_par m_len(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {strlen(mu_par_str(m, 0))}};
 	return rv;
 }
 
-/*@ LEFT$(s$, n) 
- *# Returns the {{n}} leftmost characters in {{s$}} 
+/*@ LEFT$(s$, n)
+ *# Returns the {{n}} leftmost characters in {{s$}}
  */
 static struct mu_par m_left(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	const char *s = mu_par_str(m, 0);
 	int len = mu_par_num(m, 1);
-	
+
 	if(len < 0)
 		mu_throw(m, "Invalid parameters to LEFT$()");
-	
+
 	if(len > (int)strlen(s))
 		len = strlen(s);
-	
-	rv.type = mu_str;	
+
+	rv.type = mu_str;
 	rv.v.s = mu_alloc(m, len + 1);
 	strncpy(rv.v.s, s, len);
 	rv.v.s[len] = '\0';
@@ -1331,25 +1331,25 @@ static struct mu_par m_right(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	const char *s = mu_par_str(m, 0);
 	int len = mu_par_num(m, 1);
-	
+
 	if(len < 0)
 		mu_throw(m, "Invalid parameters to RIGHT$()");
-	
+
 	if(len > (int)strlen(s))
 		len = strlen(s);
-	
+
 	s = s + strlen(s) - len;
-	
-	rv.type = mu_str;	
+
+	rv.type = mu_str;
 	rv.v.s = strdup(s);
 	if(!rv.v.s)
 		mu_throw(m, "Out of memory");
-	
+
 	return rv;
 }
 
 /*@ MID$(s$, n, m)
- *# Returns the all the characters in {{s$}} between {{n}} and {{m}} \n
+ *# Returns the all the characters in {{s$}} between {{n}} and {{m}} inclusive.\n
  *# The string is indexed from 1, that is
  *#     {{MID$("Hello World From Musl", 7, 11)}}
  *# will return {{"World"}}
@@ -1360,21 +1360,21 @@ static struct mu_par m_mid(struct musl *m, int argc, struct mu_par argv[]) {
 	int p = mu_par_num(m, 1) - 1;
 	int q = mu_par_num(m, 2);
 	int len = q - p;
-	
+
 	if(q < p || p < 0)
 		mu_throw(m, "Invalid parameters to MID$()");
-	
+
 	if(len > (int)strlen(s + p))
 		len = strlen(s + p);
-	
-	rv.type = mu_str;	
+
+	rv.type = mu_str;
 	rv.v.s = mu_alloc(m, len + 1);
 	strncpy(rv.v.s, s + p, len);
 	rv.v.s[len] = '\0';
 	return rv;
 }
 
-/*@ UCASE$(x$) 
+/*@ UCASE$(x$)
  *# Converts the string {{x$}} to uppercase. */
 static struct mu_par m_ucase(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
@@ -1387,7 +1387,7 @@ static struct mu_par m_ucase(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ LCASE$(x$) 
+/*@ LCASE$(x$)
  *# Converts the string {{x$}} to lowercase. */
 static struct mu_par m_lcase(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
@@ -1400,19 +1400,19 @@ static struct mu_par m_lcase(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ TRIM$(x$) 
+/*@ TRIM$(x$)
  *# Removes leading and trailing whitespace from string {{x$}}. */
 static struct mu_par m_trim(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	char *c;
 	const char *s = mu_par_str(m, 0);
-	
+
 	while(isspace(s[0])) s++;
-		
+
 	rv.type = mu_str;
 	rv.v.s = strdup(s);
 	if(!rv.v.s) mu_throw(m, "Out of memory");
-	
+
 	for(c=rv.v.s + strlen(rv.v.s) - 1;c > rv.v.s; c--)
 		if(!isspace(*c)) {
 			c[1] = '\0';
@@ -1421,16 +1421,16 @@ static struct mu_par m_trim(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ INSTR(str$, find$) 
+/*@ INSTR(str$, find$)
  *# Searches for {{find$}} in {{str$}} and returns the index.\n
  *# It returns 0 if {{find$}} was not found.
  */
 static struct mu_par m_instr(struct musl *m, int argc, struct mu_par argv[]) {
-	struct mu_par rv = {mu_int, {0}};	
+	struct mu_par rv = {mu_int, {0}};
 	const char *str = mu_par_str(m, 0);
-	char *x = strstr(str, mu_par_str(m, 1));	
-	if(x) 
-		rv.v.i = x - str + 1;	
+	char *x = strstr(str, mu_par_str(m, 1));
+	if(x)
+		rv.v.i = x - str + 1;
 	return rv;
 }
 
@@ -1448,12 +1448,12 @@ static struct mu_par m_iff(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ DATA("list$", item1, item2, item3, ...) 
+/*@ DATA("list$", item1, item2, item3, ...)
  *# Populates an array named {{list$}}.\n
  *N The first parameter is a string containing the name of the array.
- *# A call 
+ *# A call
  *[
- *# DATA("array$", "Alice", "Bob", "Carol") 
+ *# DATA("array$", "Alice", "Bob", "Carol")
  *]
  *# is equivalent to the statements:
  *[
@@ -1466,37 +1466,65 @@ static struct mu_par m_iff(struct musl *m, int argc, struct mu_par argv[]) {
  *# It returns the number of items inserted into the array.
  */
 static struct mu_par m_data(struct musl *m, int argc, struct mu_par argv[]) {
-	struct mu_par rv = {mu_int, {0}};	
+	struct mu_par rv = {mu_int, {0}};
 	int i, idx;
 	char *c, name[TOK_SIZE];
 	const char *aname;
-	
-	if(argc < 1 || argv[0].type != mu_str)
-		mu_throw(m, "DATA() must take at least 1 string parameter");	
-	
-	if(!isalpha(argv[0].v.s[0])) 
+
+	if(argc < 1)
+		mu_throw(m, "DATA() must take at least one parameter");
+	if(!isalpha(argv[0].v.s[0]))
 		mu_throw(m, "DATA()'s first parameter must be a valid identifier");
-	
 	for(c = argv[0].v.s; c[0]; c++)
 		if(!isalnum(c[0]) && !strchr("_$", c[0])) {
 			mu_throw(m, "DATA()'s first parameter must be a valid identifier");
-		}		
-	
+		}
+
 	aname = mu_par_str(m, 0);
 	snprintf(name, TOK_SIZE, "%s[length]", aname);
 	idx = mu_get_num(m, name);
-		
+
 	for(i = 1; i < argc; i++) {
 		snprintf(name, TOK_SIZE, "%s[%d]", aname, ++idx);
 		if(!mu_set_str(m, name, mu_par_str(m, i)))
 			mu_throw(m, "Out of memory");
 	}
-	
+
 	snprintf(name, TOK_SIZE, "%s[length]", aname);
 	if(!mu_set_num(m, name, idx))
 		mu_throw(m, "Out of memory");
+
+	rv.v.i = idx;
+	return rv;
+}
+/*@ MAP("mymap", key1, val1, key2, val2, ...)
+ *# Initializes {{mymap$}} as an array of key-value pairs.\n
+ */
+static struct mu_par m_map(struct musl *m, int argc, struct mu_par argv[]) {
+	struct mu_par rv = {mu_int, {0}};
+	int i = 1;
+	char *c, name[TOK_SIZE];
+	const char *aname;
+
+	if(argc < 1 || argc % 2 == 0)
+		mu_throw(m, "MAP() must take an odd number of parameters");
+	if(!isalpha(argv[0].v.s[0]))
+		mu_throw(m, "MAP()'s first parameter must be a valid identifier");
+	for(c = argv[0].v.s; c[0]; c++)
+		if(!isalnum(c[0]) && !strchr("_$", c[0])) {
+			mu_throw(m, "MAP()'s first parameter must be a valid identifier");
+		}
+	aname = mu_par_str(m, 0);
+
+	while(i < argc) {
+		const char *key = mu_par_str(m, i++);
+		const char *val = mu_par_str(m, i++);
+		snprintf(name, TOK_SIZE, "%s[%s]", aname, key);
+		if(!mu_set_str(m, name, val))
+			mu_throw(m, "Out of memory");
+		rv.v.i++;
+	}
 	
-	rv.v.i = argc - 1;
 	return rv;
 }
 
@@ -1512,7 +1540,8 @@ static int add_stdfuns(struct musl *m) {
 		!mu_add_func(m, "lcase$", m_lcase)||
 		!mu_add_func(m, "trim$", m_trim)||
 		!mu_add_func(m, "instr", m_instr)||
-		!mu_add_func(m, "iff", m_iff)||		
-		!mu_add_func(m, "data", m_data)
+		!mu_add_func(m, "iff", m_iff)||
+		!mu_add_func(m, "data", m_data)||
+		!mu_add_func(m, "map", m_map)
 		);
 }
