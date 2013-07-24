@@ -35,25 +35,21 @@ can be rewritten as
 	DATA(@ARRAY$, "Alice", "Bob", "Carol")
 and it will be clear that the first parameter is a reference to a variable called ARRAY$ (even though nothing changed under the hood).
 
-The VAL(x$) and STR$(x) built in functions are probably no longer necessary now that we're weakly typed.
-
 ToDo Built-In Functions:
 ========================
 
 Ideas for built-in functions that may be useful go in this section.
 
+We need a MAP() function that works kinda like DATA(), except, MAP("aaa", "Alice", 111, "Bob", 222, "Carol", 333) maps alice to 111, Bob to 222 etc in the array aaa.
+
 Replace$(str$, find, repl) - Replaces occurances of 'find' with 'repl' in str
 
 GSUB$() - Like Awk's gsub() function (instead of replace$() above)
 
-Speaking of Awk, how about a function AWK(line$, [delim$]) that takes line$ and splits it into columns in the _C[i], so that a Musl script can do some of the same work as Awk. It returns the number of columns found in the line.
+Speaking of Awk, how about a function AWK(line$, [delim$]) that takes line$ and splits it into columns in the _C[i], so that a Musl script can do some of the same work as Awk. It returns the number of columns found in the line. _C["length"] should be the same as the arrays filled in by DATA() 
 
-IIF(expr, a, b) and IIF$(expr, a$, b$)
+IIF(expr, a, b) which stands in for ?: (though it works slightly differently)
 
 PUSH() and POP() functions that store variables inside some internal stack temporarily (useful for GOSUBs, because they can emulate local variables). These would benefit if the language was dynamically/weakly typed because as it stands one would need a POP() and POP$() function.
 
 I'd also like to have a feature to dump all the variables somewhere for debugging Musl programs. It should be an API function and a Built-in function.
-
-If I make the language dynamically typed, then the DATA() function can also store the length in a "length" field. In other words, a call like
-	DATA(@ARRAY$, "Alice", "Bob", "Carol")
-will result in ARRAY$["length"] being 3, in addition to its existing functionality (the Awk() function I proposed above should behave the same way wrt. _C["length"]). 

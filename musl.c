@@ -1,7 +1,6 @@
 /*! Musl
- *#   {/Marginally Useful Scripting Language/}
- *# or
- *#   {/My UnStructured Language/}
+ *# {*Musl*}, the {/Marginally Useful Scripting Language/}
+ *# or {/My UnStructured Language/}
  *#
  *# An interpreter for a silly unstructured programming language.
  *#
@@ -1247,16 +1246,26 @@ int mu_add_func(struct musl *m, const char *name, mu_func fun) {
 int mu_par_num(struct musl *m, int n) {
 	if(n >= m->argc)
 		mu_throw(m, "Too few parameters to function");
-	if(m->argv[n].type != mu_int)
-		mu_throw(m, "Parameter %d must be numeric", n);
+	if(m->argv[n].type == mu_str) {
+		int i = atoi(m->argv[n].v.s);
+		free(m->argv[n].v.s);
+		m->argv[n].type = mu_int;
+		m->argv[n].v.i = i;
+	}
 	return m->argv[n].v.i;
 }
 
 const char *mu_par_str(struct musl *m, int n) {
 	if(n >= m->argc)
 		mu_throw(m, "Too few parameters to function");
-	if(m->argv[n].type != mu_str)
-		mu_throw(m, "Parameter %d must be a string", n);
+	if(m->argv[n].type == mu_int) {	
+		char *buffer = malloc(20);
+		if(!buffer) 
+			mu_throw(m, "Out of memory");
+		sprintf(buffer, "%d", m->argv[n].v.i);
+		m->argv[n].type = mu_str;
+		m->argv[n].v.s = buffer;
+	}
 	return m->argv[n].v.s;
 }
 
@@ -1275,7 +1284,7 @@ const char *mu_par_str(struct musl *m, int n) {
 /*@ VAL(x$) 
  *# Converts the string {{x$}} to a number. */
 static struct mu_par m_val(struct musl *m, int argc, struct mu_par argv[]) {
-	struct mu_par rv = {mu_int, {atoi(mu_par_str(m, 0))}};
+	struct mu_par rv = {mu_int, {mu_par_num(m, 0)}};
 	return rv;
 }
 
@@ -1284,8 +1293,7 @@ static struct mu_par m_val(struct musl *m, int argc, struct mu_par argv[]) {
 static struct mu_par m_str(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	rv.type = mu_str;
-	rv.v.s = mu_alloc(m, TOK_SIZE);
-	snprintf(rv.v.s, TOK_SIZE, "%d", mu_par_num(m, 0));
+	rv.v.s = strdup(mu_par_str(m, 0));
 	return rv;
 }
 
@@ -1426,8 +1434,23 @@ static struct mu_par m_instr(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ DATA(list$, item1, item2, item3, ...) 
+/*@ IFF(cond, then_val, else_val)
+ *# If the condition {{cond}} is true, it returns {{then_val}},
+ *# otherwise it returns {{else_val}}
+ */
+static struct mu_par m_iff(struct musl *m, int argc, struct mu_par argv[]) {
+	struct mu_par rv = {mu_int, {0}};
+	int res = mu_par_num(m, 0) ? 1 : 2;
+	rv = argv[res];
+	if(rv.type == mu_str) {
+		rv.v.s = strdup(rv.v.s);
+	}
+	return rv;
+}
+
+/*@ DATA("list$", item1, item2, item3, ...) 
  *# Populates an array named {{list$}}.\n
+ *N The first parameter is a string containing the name of the array.
  *# A call 
  *[
  *# DATA("array$", "Alice", "Bob", "Carol") 
@@ -1438,11 +1461,13 @@ static struct mu_par m_instr(struct musl *m, int argc, struct mu_par argv[]) {
  *# LET array$[2] = "Bob"
  *# LET array$[3] = "Carol"
  *]
+ *# {{list$["length"]}} will contain the number of items in the array.\n
+ *# Subsequent calls to {{DATA()}} on the same array will append more data.\n
  *# It returns the number of items inserted into the array.
  */
 static struct mu_par m_data(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};	
-	int i, sa = 0;
+	int i, idx;
 	char *c, name[TOK_SIZE];
 	const char *aname;
 	
@@ -1451,28 +1476,26 @@ static struct mu_par m_data(struct musl *m, int argc, struct mu_par argv[]) {
 	
 	if(!isalpha(argv[0].v.s[0])) 
 		mu_throw(m, "DATA()'s first parameter must be a valid identifier");
+	
 	for(c = argv[0].v.s; c[0]; c++)
-		if(!isalnum(c[0])) {
-			if(c[0] == '$' && c[1] == '\0')
-				sa = 1;
-			else
-				mu_throw(m, "DATA()'s first parameter must be a valid identifier");
+		if(!isalnum(c[0]) && !strchr("_$", c[0])) {
+			mu_throw(m, "DATA()'s first parameter must be a valid identifier");
 		}		
 	
 	aname = mu_par_str(m, 0);
-	if(sa) {		
-		for(i = 1; i < argc; i++) {
-			snprintf(name, TOK_SIZE, "%s[%d]", aname, i);
-			if(!mu_set_str(m, name, mu_par_str(m, i)))
-				mu_throw(m, "Out of memory");
-		}		
-	} else {		
-		for(i = 1; i < argc; i++) {
-			snprintf(name, TOK_SIZE, "%s[%d]", aname, i);
-			if(!mu_set_num(m, name, mu_par_num(m, i)))
-				mu_throw(m, "Out of memory");
-		}
+	snprintf(name, TOK_SIZE, "%s[length]", aname);
+	idx = mu_get_num(m, name);
+		
+	for(i = 1; i < argc; i++) {
+		snprintf(name, TOK_SIZE, "%s[%d]", aname, ++idx);
+		if(!mu_set_str(m, name, mu_par_str(m, i)))
+			mu_throw(m, "Out of memory");
 	}
+	
+	snprintf(name, TOK_SIZE, "%s[length]", aname);
+	if(!mu_set_num(m, name, idx))
+		mu_throw(m, "Out of memory");
+	
 	rv.v.i = argc - 1;
 	return rv;
 }
@@ -1489,6 +1512,7 @@ static int add_stdfuns(struct musl *m) {
 		!mu_add_func(m, "lcase$", m_lcase)||
 		!mu_add_func(m, "trim$", m_trim)||
 		!mu_add_func(m, "instr", m_instr)||
+		!mu_add_func(m, "iff", m_iff)||		
 		!mu_add_func(m, "data", m_data)
 		);
 }
