@@ -108,21 +108,22 @@ struct mu_par {
 typedef struct mu_par (*mu_func)(struct musl *m, int argc, struct mu_par argv[]);
 
 /*@ int mu_add_func(struct musl *m, const char *name, mu_func fun)
- *# Adds a function 'fun' named 'name' to the interpreter.
+ *# Adds a function {{fun}} named {{name}} to the interpreter.
  *# Existing functions are replaced.
  *# Returns 0 on failure.
  */
 int mu_add_func(struct musl *m, const char *name, mu_func fun);
 
 /*@ void mu_throw(struct musl *m, const char *msg, ...)
- *# Reports errors that happen in external functions. 
+ *# Reports errors that happen in external functions.
+ *N Only call it from within external functions.
  *# Don't call it from anywhere else because it uses
- *# longjmp() to return to the mu_execute(). 
+ *# {{longjmp()}} to return to the {{mu_execute()}}. 
  */
 void mu_throw(struct musl *m, const char *msg, ...);
 
 /*@ const char *mu_error_msg(struct musl *m)
- *# Retrieves a text description of errors that occured 
+ *# Retrieves a text description of errors that occured.
  */
 const char *mu_error_msg(struct musl *m);
 
@@ -135,7 +136,7 @@ const char *mu_error_text(struct musl *m);
 /*@ int mu_cur_line(struct musl *m)
  *# Returns the current line number (actual line, not the label)
  *# in the script where the interpreter was last executing.\n
- *# The memory to which the 'script' parameter of {{mu_run()}}
+ *# The memory to which the {{script}} parameter of {{mu_run()}}
  *# points should still be valid, because it is used internally.
  */
 int mu_cur_line(struct musl *m);
@@ -148,7 +149,7 @@ int mu_cur_line(struct musl *m);
 int mu_par_num(struct musl *m, int n);
 
 /*@ const char *mu_par_str(struct musl *m, int n)
- *# Gets the n'th parameter of a function as a string.\n
+ *# Gets the {{n}}'th parameter of a function as a string.\n
  *# Only call it from {{mu_func()}} external functions because 
  *# it uses {{mu_throw()}} on errors.
  */
