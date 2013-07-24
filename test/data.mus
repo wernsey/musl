@@ -1,10 +1,14 @@
 # DATA() fills in "array" with some data.
 # Its purpose is the same as the DATA statement in
 # old BASICs, but it differs in how it achieves it.
-DATA("array", "Alice", 2, "Carol")
+
+# The @ operator creates a reference: DATA() expects as
+# its first parameter the name of a variable to populate,
+# and the @array basically converts to the string "array"
+DATA(@array, "Alice", 2, "Carol")
 
 # Subsequent calls to DATA() appends to the array:
-DATA("array", "Danny", 5, "Freddy")
+DATA(@array, "Danny", 5, "Freddy")
 
 # array['length'] contains the number of items
 # in the array
@@ -14,9 +18,15 @@ PRINT("Length: ", array['length'])
 # to show that DATA() doesn't care about the
 # types of its parameters.
 FOR i = 1 TO array['length'] DO
-	PRINT(i, " ",array[i])
+	PRINT(i, " ", array[i])
 NEXT
 
+# To understand references better, see the
+# output of the following PRINT():
+testRef = "HELLO WORLD!!! LOL"
+PRINT("@testRef = '" & @testRef & "'")
+
+# Some recent changes affected STR$() and VAL(). Test them:
 PRINT('str$(1234) = ', str$(1234))
 PRINT('str$("hello") = ', str$("hello"))
 PRINT('val(1234) = ', val(1234))
@@ -26,9 +36,13 @@ PRINT('val("hello") = ', val("hello"))
 PRINT("IFF(1) : ", iff(1, "right", "wrong"))
 PRINT("IFF(0) : ", iff(0, "wrong", "right"))
 
+x = MAP(@NUMBERS$, "Alice", 1111, "Bob", 2222, "Carol", "hello world")
+PRINT(x & " items inserted into map " & @NUMBERS$)
 
-x = map("numbers", "Alice", 1111, "Bob", 2222, "Carol", "hello world")
-PRINT(x & " items inserted into map")
-PRINT("numbers[\"Alice\"] = ", numbers["Alice"])
-PRINT("numbers[\"Bob\"] = ", numbers["Bob"])
-PRINT("numbers[\"Carol\"] = ", numbers["Carol"])
+# Subsequent calls to MAP() updates existing values and inserts new data
+MAP(@NUMBERS$, "Carol", "New Value", "Dave", 555)
+
+PRINT("numbers$[\"Alice\"] = ", numbers$["Alice"])
+PRINT("numbers$[\"Bob\"] = ", numbers$["Bob"])
+PRINT("numbers$[\"Carol\"] = ", numbers$["Carol"])
+PRINT("numbers$[\"Dave\"] = ", numbers$["Dave"])

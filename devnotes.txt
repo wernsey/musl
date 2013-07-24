@@ -20,6 +20,10 @@ DIM is not needed (and not implemented) because of the way these hash tables are
 
 DATA is alsoo a function, rather than a statement.
 
+The operator @ operator is for /references/. The expression @identifier converts the identifier to a string, so @ARRAY$ will be equivalent to "ARRAY$". 
+
+It is useful, because functions like DATA() and MAP() takes as a first parameter the name of the variable as a string. Using the @ operatior makes it clear that the parameter is a reference to a variable.
+
 Things I would lake to change (when I find time):
 =================================================
 
@@ -28,14 +32,6 @@ The () around function parameters should be optional:
 should be equivalent to
 	PRINT("Hello World")
 even if I only implement it at the statement level.
-
-I need an operator for /references/. What I would like is an operator, say '@' that takes an identifier (perhaps also a number) and converts it to a string, so @ARRAY$ will be equivalent to "ARRAY$". 
-
-It is useful, because then a call to 
-	DATA("ARRAY$", "Alice", "Bob", "Carol")
-can be rewritten as
-	DATA(@ARRAY$, "Alice", "Bob", "Carol")
-and it will be clear that the first parameter is a reference to a variable called ARRAY$ (even though nothing changed under the hood).
 
 ToDo Built-In Functions:
 ========================

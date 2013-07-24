@@ -485,6 +485,15 @@ static char *par_as_str(struct mu_par *par) {
 	}
 }
 
+static void expect(struct musl *m, int tok, const char *what) {
+	if(tokenize(m) != tok) {
+		if(what)
+			mu_throw(m, "Expected %s", what);
+		else 
+			mu_throw(m, "Expected '%c'", tok);
+	}
+}
+
 /*# program ::= [line]*
  *# line ::= [label ':'] stmts <LF>
  *#            | NUMBER stmts <LF>
@@ -547,8 +556,7 @@ static const char *stmt(struct musl *m) {
 			snprintf(name, TOK_SIZE, "%s[%s]", buf, rhs.v.s);
 			free(rhs.v.s);
 
-			if(tokenize(m) != ']')
-				mu_throw(m, "Missing ']'");
+			expect(m, ']', NULL);
 		} else {
 			strcpy(name, buf);
 			tok_reset(m);
@@ -577,8 +585,7 @@ static const char *stmt(struct musl *m) {
 		if(m->active)
 			m->active = par_as_int(&rhs);
 
-		if(tokenize(m) != T_THEN)
-			mu_throw(m, "THEN expected");
+		expect(m, T_THEN, "THEN");
 
 		while(tokenize(m) == T_LF); /* Allow newlines after THEN */
 		tok_reset(m);
@@ -648,17 +655,14 @@ static const char *stmt(struct musl *m) {
 			mu_throw(m, "FOR stack overflow");
 		m->for_stack[m->for_sp++] = m->s;
 
-		if(tokenize(m) != T_IDENT)
-			mu_throw(m, "Identifier expected after FOR");
+		expect(m, T_IDENT, "identifier");
 		strcpy(buf, m->token);
-		if(tokenize(m) != '=')
-			mu_throw(m, "'=' expected");
+		expect(m, '=', NULL);
 
 		rhs = expr(m);
 		start = par_as_int(&rhs);
 
-		if(tokenize(m) != T_TO)
-			mu_throw(m, "TO expected");
+		expect(m, T_TO, "TO");
 		expr(m);
 
 		if(tokenize(m) == T_STEP)
@@ -666,13 +670,11 @@ static const char *stmt(struct musl *m) {
 		else
 			tok_reset(m);
 
-		if(tokenize(m) != T_DO)
-			mu_throw(m, "DO expected");
+		expect(m, T_DO, "DO");
 
 		if(!m->active) {
 			m->for_sp--;
-			if(tokenize(m) != T_LF)
-				mu_throw(m, "<LF> expected");
+			expect(m, T_LF, "<LF>");
 
 			while((t=tokenize(m)) != T_NEXT) {
 				const char *x = m->last;
@@ -698,17 +700,14 @@ static const char *stmt(struct musl *m) {
 				mu_throw(m, "FOR stack underflow");
 			m->s = m->for_stack[m->for_sp - 1];
 
-			if(tokenize(m) != T_IDENT)
-				mu_throw(m, "Identifier expected after FOR");
+			expect(m, T_IDENT, "identifier");
 			strcpy(buf, m->token);
-			if(tokenize(m) != '=')
-				mu_throw(m, "'=' expected");
+			expect(m, '=', NULL);
 
 			rhs = expr(m);
 			start = par_as_int(&rhs);
 
-			if(tokenize(m) != T_TO)
-				mu_throw(m, "TO expected");
+			expect(m, T_TO, "TO");
 
 			rhs = expr(m);
 			stop = par_as_int(&rhs);
@@ -724,8 +723,7 @@ static const char *stmt(struct musl *m) {
 					step = -1;
 			}
 
-			if(tokenize(m) != T_DO)
-				mu_throw(m, "DO expected");
+			expect(m, T_DO, "DO");
 
 			idx = mu_get_num(m, buf);
 			if(idx == stop) {
@@ -882,17 +880,14 @@ static struct mu_par cat_expr(struct musl *m) {
 	int t;
 	struct mu_par lhs = add_expr(m);
 	if((t = tokenize(m)) == '&') {
-
 		do {
 			char *s = par_as_str(&lhs), *t;
 			struct mu_par rhs = add_expr(m);
 
 			par_as_str(&rhs);
 
-			t = malloc(strlen(s) + strlen(rhs.v.s) + 1);
-			if(!t)
-				mu_throw(m, "Out of memory");
-
+			t = mu_alloc(m, strlen(s) + strlen(rhs.v.s) + 1);
+			
 			strcpy(t,s);
 			strcat(t,rhs.v.s);
 			assert(strlen(t) == strlen(s) + strlen(rhs.v.s));
@@ -901,9 +896,6 @@ static struct mu_par cat_expr(struct musl *m) {
 			lhs.v.s = t;
 
 		} while((t = tokenize(m)) == '&');
-
-
-
 	}
 	tok_reset(m);
 	return lhs;
@@ -980,6 +972,7 @@ static struct mu_par uexpr(struct musl *m) {
  *#        |  ident '(' [fparams] ')'
  *#        |  number
  *#        |  string
+ *#        |  '@' ident
  *]
  */
 static struct mu_par atom(struct musl *m) {
@@ -989,8 +982,7 @@ static struct mu_par atom(struct musl *m) {
 
 	if((t = tokenize(m)) == '(') {
 		struct mu_par lhs = expr(m);
-		if(tokenize(m) != ')')
-			mu_throw(m, "Missing ')'");
+		expect(m, ')', NULL);
 		return lhs;
 	} else if(t == T_IDENT) {
 
@@ -1006,8 +998,7 @@ static struct mu_par atom(struct musl *m) {
 			snprintf(name, TOK_SIZE, "%s[%s]", buf, rhs.v.s);
 			free(rhs.v.s);
 
-			if(tokenize(m) != ']')
-				mu_throw(m, "Missing ']'");
+			expect(m, ']', NULL);
 		} else {
 			strcpy(name, buf);
 			tok_reset(m);
@@ -1032,6 +1023,11 @@ static struct mu_par atom(struct musl *m) {
 		ret.v.i = atoi(m->token);
 		return ret;
 	} else if(t == T_STRING) {
+		ret.type = mu_str;
+		ret.v.s = strdup(m->token);
+		return ret;
+	} else if(t == '@') {
+		expect(m, T_IDENT, "identifier");
 		ret.type = mu_str;
 		ret.v.s = strdup(m->token);
 		return ret;
@@ -1459,12 +1455,12 @@ static struct mu_par m_iff(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ DATA("list$", item1, item2, item3, ...)
+/*@ DATA(@list$, item1, item2, item3, ...)
  *# Populates an array named {{list$}}.\n
  *N The first parameter is a string containing the name of the array.
  *# A call
  *[
- *# DATA("array$", "Alice", "Bob", "Carol")
+ *# DATA(@array$, "Alice", "Bob", "Carol")
  *]
  *# is equivalent to the statements:
  *[
@@ -1504,11 +1500,11 @@ static struct mu_par m_data(struct musl *m, int argc, struct mu_par argv[]) {
 	rv.v.i = idx;
 	return rv;
 }
-/*@ MAP("mymap", key1, val1, key2, val2, ...)
+/*@ MAP(@mymap, key1, val1, key2, val2, ...)
  *# Initializes {{mymap}} as an array of key-value pairs.\n
  *# A call
  *[
- *# MAP("mymap", "Alice", 111, "Bob", 222, "Carol", 333)
+ *# MAP(@mymap, "Alice", 111, "Bob", 222, "Carol", 333)
  *]
  *# is equivalent to the statements:
  *[
