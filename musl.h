@@ -176,6 +176,12 @@ int mu_set_str(struct musl *m, const char *name, const char *val);
  */
 const char *mu_get_str(struct musl *m, const char *name);
 
+/*@ int mu_has_var(struct musl *m, const char *name)
+ *# Returns 1 if the variable {{name}} is defined in the 
+ *# interpreter, 0 otherwise.
+ */
+int mu_has_var(struct musl *m, const char *name);
+
 /*@ void mu_set_data(struct musl *m, void *data)
  *# Stores arbitrary user data in the musl structure
  *# that can later be retrieved with {{mu_get_data()}}

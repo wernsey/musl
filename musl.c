@@ -1202,6 +1202,10 @@ int mu_set_str(struct musl *m, const char *name, const char *val) {
 	return v->v.s != NULL;
 }
 
+int mu_has_var(struct musl *m, const char *name) {
+	return !!find_var(m->vars, name);
+}
+
 const char *mu_get_str(struct musl *m, const char *name) {
 	struct var *v = find_var(m->vars, name);
 	if(!v)
@@ -1537,6 +1541,55 @@ static struct mu_par m_map(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
+/*@ PUSH(val)
+ *# Pushes a value {{val}} onto an internal stack where it can be popped 
+ *# later through the {{POP()}} function.\n
+ *# It is used to simulate local variables in subroutines.
+ *X PUSH(foo)
+ *N Don't access {{__stack[]}} and {{__sp}} directly.
+ */
+static struct mu_par m_push(struct musl *m, int argc, struct mu_par argv[]) {
+	struct mu_par rv = {mu_int, {0}};
+	int sp = 1;
+	char name[TOK_SIZE];
+	
+	if(mu_has_var(m, "__sp")) {
+		sp = mu_get_num(m, "__sp") + 1;
+	}
+	snprintf(name, TOK_SIZE, "__stack[%d]", sp);
+	if(!mu_set_str(m, name, mu_par_str(m, 0)))
+		mu_throw(m, "Out of memory");
+	
+	mu_set_num(m, "__sp", sp);
+	
+	return rv;
+}
+
+/*@ POP()
+ *# Pops a value from the stack that was pushed earlier through the
+ *# {{PUSH()}} function.
+ *X foo = POP()
+ */
+static struct mu_par m_pop(struct musl *m, int argc, struct mu_par argv[]) {
+	struct mu_par rv = {mu_str, {0}};
+	int sp;
+	char name[TOK_SIZE];
+	
+	if(!mu_has_var(m, "__sp"))
+		mu_throw(m, "No stack pointer for POP()");
+		
+	sp = mu_get_num(m, "__sp");
+	if(sp <= 0)
+		mu_throw(m, "Stack underflow in POP()");
+	
+	snprintf(name, TOK_SIZE, "__stack[%d]", sp);
+	rv.v.s = strdup(mu_get_str(m, name));
+	
+	mu_set_num(m, "__sp", sp - 1);
+	
+	return rv;
+}
+
 /* Adds the standard functions to the interpreter */
 static int add_stdfuns(struct musl *m) {
 	return !(!mu_add_func(m, "val", m_val) ||
@@ -1551,6 +1604,8 @@ static int add_stdfuns(struct musl *m) {
 		!mu_add_func(m, "instr", m_instr)||
 		!mu_add_func(m, "iff", m_iff)||
 		!mu_add_func(m, "data", m_data)||
-		!mu_add_func(m, "map", m_map)
+		!mu_add_func(m, "map", m_map)||
+		!mu_add_func(m, "push", m_push)||
+		!mu_add_func(m, "pop", m_pop)
 		);
 }

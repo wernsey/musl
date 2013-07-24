@@ -46,3 +46,34 @@ PRINT("numbers$[\"Alice\"] = ", numbers$["Alice"])
 PRINT("numbers$[\"Bob\"] = ", numbers$["Bob"])
 PRINT("numbers$[\"Carol\"] = ", numbers$["Carol"])
 PRINT("numbers$[\"Dave\"] = ", numbers$["Dave"])
+
+# The next section tests the PUSH() and POP() functions.
+
+foo = "Hello"
+bar = 123
+
+# For more sophisticated applications, references can also be used with callbacks:
+CALL(@theSub)
+
+PRINT("After Sub: foo=" & foo & " bar=" & bar)
+
+PRINT(" ~~ The End ~~")
+
+END
+
+TheSub:
+	# PUSH() and POP() can be used to simulate local variables in a sub,
+	# by pushing their values to the stack.
+	PUSH(foo)
+	PUSH(bar)
+	
+	# You are now free to use foo and bar however you like:
+	foo = 789
+	bar = "alacazam!"
+	PRINT("Inside Sub: foo=" & foo & " bar=" & bar)
+	
+	# Before the sub returns you pop the old values back
+	# (in the reverse order in which they were pushed)
+	bar = POP()
+	foo = POP()
+	RETURN
