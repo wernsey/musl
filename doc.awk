@@ -1,34 +1,47 @@
 BEGIN { 
 	if(!title) title = "Documentation"
-	print "<html><head><title>" title "</title>";
+	print "<!DOCTYPE html>\n<html>\n<head>\n<title>" title "</title>";
 	print "<style><!--";
-	print "tt,strong {color:#575c91}";
-	print "pre {color:#575c91;background:#d4d4ff;border:1px solid #575c91;border-radius:5px;padding:15px;margin-left:30px;margin-right:30px;}";
-	print "h2  {color:#5252ef;background:#9191c1;border: 1px solid #575c91;border-radius:5px;padding:20px;text-align:center;}";
-	print "h3  {color:#575c91;background:#b8b8e0;border-top:1px solid #575c91;border-radius:5px;padding:10px;font-family:monospace;}";
 	print "body {font-family:Arial, Verdana, Helvetica, sans-serif;margin-left:20px;margin-right:20px;}";
+	print "h1 {color:#575c91;border:none;padding:5px;}";
+	print "h2 {color:#575c91;border:none;padding:5px;}";
+	print "h3 {color:#9191c1;border:none;padding:5px;}";
+	print "a:link {color: #575c91;}";
+	print "a:visited {color: black;}";
+	print "a:active {color: black;}";
+	print "code,strong {color:#575c91}";
+	print "pre {color:#575c91;background:#d4d4ff;border:none;border-radius:5px;padding:7px;margin-left:15px;margin-right:15px;}";
+	print "div.title {color:#575c91;font-weight:bold;background:#b8b8e0;border:none;border-radius:5px;padding:10px;margin:10px 5px;font-family:monospace;}";
+	print "div.box {background:#f0f0ff;border:none;border-radius:5px;margin:10px 2px;padding:1px;}";
+	print "div.inner-box {border:none;margin:5px;padding:3px;}";
 	print "--></style>";
-	print "</head><body>";
+	print "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
+	print "</head>\n<body>";
 }
 
 /\/\*/ { comment = 1; }
 
-/\*!/ { if(!comment) next; s = substr($0, index($0, "*!") + 2); print "<h2><tt>" filter(s) "</tt></h2>"; next;}
-/\*@/ { if(!comment) next; s = substr($0, index($0, "*@") + 2); print "<h3><tt>" filter(s) "</tt></h3>"; next;}
-/\*#[ \t]*$/ { if(!comment) next; if(!pre) print "<br>"; next;}
+/\*1/ { if(!comment) next; s = substr($0, index($0, "*1") + 2); print "<h1>" filter(s) "</h1>"; next;}
+/\*2/ { if(!comment) next; s = substr($0, index($0, "*2") + 2); print "<h2>" filter(s) "</h2>"; next;}
+/\*3/ { if(!comment) next; s = substr($0, index($0, "*3") + 2); print "<h3>" filter(s) "</h3>"; next;}
+/\*@/ { if(!comment) next; s = substr($0, index($0, "*@") + 2); print "<div class=\"box\"><div class=\"title\">" filter(s) "</div><div class=\"inner-box\">"; div+=2; next;}
+/\*#[ \t\r]*$/ { if(!comment) next; if(!pre) print "<br>"; next;}
 /\*#/ { if(!comment) next; s = substr($0, index($0, "*#") + 2); print filter(s);}
-/\*&/ { if(!comment) next; s = substr($0, index($0, "*&") + 2); print "<tt>" filter(s) "</tt><br>"; next;}
-/\*X/ { if(!comment) next; s = substr($0, index($0, "*X") + 2); print "<p><strong>Example:</strong><tt>" filter(s) "</tt></p>"; next;}
+/\*&/ { if(!comment) next; s = substr($0, index($0, "*&") + 2); print "<code>" filter(s) "</code><br>"; next;}
+/\*X/ { if(!comment) next; s = substr($0, index($0, "*X") + 2); print "<p><strong>Example:</strong><code>" filter(s) "</code></p>"; next;}
 /\*N/ { if(!comment) next; s = substr($0, index($0, "*N") + 2); print "<p><strong>Note:</strong><em>" filter(s) "</em></p>"; next;}
 /\*\[/ { if(!comment) next; pre=1; print "<pre>"; next;}
 /\*]/ { if(!comment) next; pre=0; print "</pre>"; next;}
 /\*\{/ { if(!comment) next; print "<ul>"; next;}
 /\*\*/ { if(!comment) next; s = substr($0, index($0, "**") + 2); print "<li>" filter(s); next;}
-/\*}/ { if(!comment) next; print "</ul>"; next;}
+
+# Mistake on my part where *} at the begining of a line clashes with the *} to insert the </strong>
+/^[ \t]*\*}/ { if(!comment) next; print "</ul>"; next;}
+
 /\*-/ { if(!comment) next; print "<hr size=2>"; next;}
 /\*=/ { if(!comment) next; print "<hr size=5>"; next;}
 
-/\*\// { comment = 0; }
+/\*\// { comment=0; while(div > 0) {print "</div>"; div--;} }
 
 END { print "</body></html>" }
 
@@ -37,9 +50,9 @@ function filter(ss,        j, k1, k2, k3)
 	gsub(/&/, "\\&amp;", ss); 
 	gsub(/</, "\\&lt;", ss); 
 	gsub(/>/, "\\&gt;", ss);
-	gsub(/\\n[ \t]*$/, "<br>", ss);
-	gsub(/{{/, "<tt>", ss); 
-	gsub(/}}/, "</tt>", ss);
+	gsub(/\\n[ \t\r]*$/, "<br>", ss);
+	gsub(/{{/, "<code>", ss); 
+	gsub(/}}/, "</code>", ss);
 	gsub(/{\*/, "<strong>", ss); 
 	gsub(/\*}/, "</strong>", ss);
 	gsub(/{\//, "<em>", ss); 
@@ -51,8 +64,7 @@ function filter(ss,        j, k1, k2, k3)
 	gsub(/http:\/\/[a-zA-Z0-9._\/\-%~]+/, "<a href=\"&\">&</a>", ss);
 	
 	# Use a ##word to specify an anchor, eg. ##foo gets translated to <a name="foo">foo</a>
-	while(j = match(ss, /##[A-Za-z0-9_]+/))
-	{
+	while(j = match(ss, /##[A-Za-z0-9_]+/)) {
 		k1 = substr(ss, 1, j - 1);
 		k2 = substr(ss, j + 2, RLENGTH-2);
 		k3 = substr(ss, j + RLENGTH);
@@ -60,8 +72,7 @@ function filter(ss,        j, k1, k2, k3)
 	}
 	
 	# Use a ~~word to specify an anchor, eg. ~~foo gets translated to <a href="#foo">foo</a>
-	while(j = match(ss, /~~[A-Za-z0-9_]+/))
-	{
+	while(j = match(ss, /~~[A-Za-z0-9_]+/)) {
 		k1 = substr(ss, 1, j - 1);
 		k2 = substr(ss, j + 2, RLENGTH-2);
 		k3 = substr(ss, j + RLENGTH);

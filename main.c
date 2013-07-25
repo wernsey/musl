@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-/*@ Extended Functions
+/*3 Extended Functions
  *# These functions are available to programs run using the
  *# standalone interpreter:
  *#

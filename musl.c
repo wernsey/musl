@@ -1,10 +1,10 @@
-/*! Musl
+/*1 Musl
  *# {*Musl*}, the {/Marginally Useful Scripting Language/}
  *# or {/My UnStructured Language/}
  *#
  *# An interpreter for a silly unstructured programming language.
  *#
- *@ License
+ *2 License
  *# Author: Werner Stoop.\n
  *# These sources are provided under the terms of the unlicense:
  *[
@@ -405,7 +405,7 @@ char *mu_readfile(const char *fname) {
 }
 
 /*
- *@ Syntax
+ *2 Syntax
  *# The following describes the syntax of the interpreter.
  *# Consult the examples if it is unclear.
  *[
@@ -1284,7 +1284,9 @@ int mu_valid_id(const char *id) {
  * Standard functions
  */
 
-/*@ Built-In Functions
+/*2 Functions
+ *# These functions are available to {*Musl*} scripts.
+ *3 Built-In Functions
  *# The Following built-in functions are available to all scripts.
  *#
  * When implementing your own functions, keep in mind that functions

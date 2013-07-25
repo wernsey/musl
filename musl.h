@@ -1,11 +1,9 @@
 /*
  * Musl: A silly scripting language.
- * This file allows you to embed the MUSL interpreter into
+ * This file allows you to embed the Musl interpreter into
  * your own applications.
- * See main.c for an example of how this is done.
- * See musl.c for implementation details.
  *
- *! API
+ *2 API
  *# {*Musl*} provides an API through which it can be embedded into
  *# other applications in order to provide a scripting interface.\n
  *# About terminology:\n
@@ -23,6 +21,11 @@
  *# registered with the interpreter through {{mu_add_func()}}
  *# so that it can be called from scripts.
  *}
+ *# For more information:
+ *{ 
+ ** See {{main.c}} for an example of how to add Musl to your applications.
+ ** See {{musl.c}} for details about the implementation of the API.
+ *}
  */
 #ifndef MUSL_H
 #define MUSL_H
@@ -36,7 +39,8 @@ extern "C"
 #endif
 	
 /*@ struct musl
- *# {*Musl*} interpreter structure */
+ *# {*Musl*} interpreter structure 
+ */
 struct musl;
 
 /*@ char *mu_readfile(const char *fname)
@@ -142,7 +146,7 @@ const char *mu_error_text(struct musl *m);
 int mu_cur_line(struct musl *m);
 
 /*@ int mu_par_num(struct musl *m, int n)
- *# Gets the n'th parameter of a function as a number.\n
+ *# Gets the {{n}}'th parameter of a function as a number.\n
  *# Only call it from {{mu_func()}} external functions because 
  *# it uses {{mu_throw()}} on errors.
  */
