@@ -12,6 +12,11 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef WITH_REGEX
+#include <sys/types.h>
+#include <regex.h>
+#endif
+
 #include "musl.h"
 
 #define INPUT_BUFFER_SIZE 80
@@ -383,17 +388,17 @@ static struct mu_par my_regex(struct musl *m, int argc, struct mu_par argv[])
 	regex_t preg;
 	regmatch_t sm[10];
 	int r;
-	char errbuf[MAX_ERROR_TEXT];
+	char errbuf[128];
 
 	if((r = regcomp(&preg, pat, REG_EXTENDED)) != 0) {
-		regerror(r, &preg, errbuf, MAX_ERROR_TEXT);
+		regerror(r, &preg, errbuf, sizeof errbuf);
 		regfree(&preg);
 		mu_throw(m, "In REGEX(): %s", errbuf);
 	}
 
 	if((r = regexec(&preg, str, 10, sm, 0)) != 0) {
 		if(r != REG_NOMATCH) {
-			regerror(r, &preg, errbuf, MAX_ERROR_TEXT);
+			regerror(r, &preg, errbuf, sizeof errbuf);
 			regfree(&preg);
 			mu_throw(m, "In REGEX(): %s", errbuf);
 		}
@@ -401,21 +406,27 @@ static struct mu_par my_regex(struct musl *m, int argc, struct mu_par argv[])
 	} else {
 		for(r = 0; r < 10; r++) {
 			const char *c, *start;
-			char *match, name[TOK_SIZE];
+			char *match, name[30];
 			if(sm[r].rm_so < 0)
 				break;
 
-			match = mu_alloc(m, sm[r].rm_eo + 1);
+			match = malloc(sm[r].rm_eo + 1);
+			if(!match)
+				mu_throw(m, "Out of memory");
+
 			start = str + sm[r].rm_so;
 			for(c = start; c - str < sm[r].rm_eo; c++)
 				match[c - start] = *c;
 			match[c - start] = '\0';
 
-			snprintf(name, TOK_SIZE, "_m$[%d]", r);
+			snprintf(name, sizeof name, "_m$[%d]", r);
 			if(!mu_set_str(m, name, match))
 				mu_throw(m, "Out of memory");
 			free(match);
 		}
+		if(!mu_set_num(m, "_m$[length]", r))
+			mu_throw(m, "Out of memory");
+			
 		rv.v.i = r;
 	}
 	regfree(&preg);

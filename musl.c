@@ -44,11 +44,6 @@
 #include <time.h>
 #include <assert.h>
 
-#ifdef WITH_REGEX
-#include <sys/types.h>
-#include <regex.h>
-#endif
-
 #include "musl.h"
 
 /* Compiling with MS Visual C++? */
@@ -71,7 +66,7 @@
 /* Size of hash tables; must be prime */
 #define HASH_SIZE 199
 
-#define MAX_ERROR_TEXT 80
+#define MAX_ERROR_TEXT 128
 
 typedef struct var* hash_table[HASH_SIZE];
 
@@ -843,7 +838,7 @@ static struct mu_par not_expr(struct musl *m) {
 /*# comp_expr ::= cat_expr [('='|'<'|'>'|'~') cat_expr]
  */
 static struct mu_par comp_expr(struct musl *m) {
-	int t, n, r;
+	int t, n = 0, r;
 	struct mu_par lhs = cat_expr(m);
 	if((t=tokenize(m)) == '=' || t == '<' || t == '>' || t == '~') {
 		struct mu_par rhs = cat_expr(m);
