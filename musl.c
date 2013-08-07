@@ -1294,14 +1294,14 @@ int mu_valid_id(const char *id) {
  * because Musl will call free() on them at a later stage.
  */
 
-/*@ VAL(x$)
+/*@ ##VAL(x$)
  *# Converts the string {{x$}} to a number. */
 static struct mu_par m_val(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {mu_par_num(m, 0)}};
 	return rv;
 }
 
-/*@ STR$(x)
+/*@ ##STR$(x)
  *# Converts the number {{x}} to a string. */
 static struct mu_par m_str(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
@@ -1310,14 +1310,14 @@ static struct mu_par m_str(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ LEN(x$)
+/*@ ##LEN(x$)
  *# Returns the length of string {{x$}} */
 static struct mu_par m_len(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {strlen(mu_par_str(m, 0))}};
 	return rv;
 }
 
-/*@ LEFT$(s$, n)
+/*@ ##LEFT$(s$, n)
  *# Returns the {{n}} leftmost characters in {{s$}}
  */
 static struct mu_par m_left(struct musl *m, int argc, struct mu_par argv[]) {
@@ -1338,7 +1338,7 @@ static struct mu_par m_left(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ RIGHT$(s$, n)
+/*@ ##RIGHT$(s$, n)
  *# Returns the {{n}} rightmost characters in {{s$}} */
 static struct mu_par m_right(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
@@ -1361,7 +1361,7 @@ static struct mu_par m_right(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ MID$(s$, n, m)
+/*@ ##MID$(s$, n, m)
  *# Returns the all the characters in {{s$}} between {{n}} and {{m}} inclusive.\n
  *# The string is indexed from 1, that is
  *#     {{MID$("Hello World From Musl", 7, 11)}}
@@ -1387,7 +1387,7 @@ static struct mu_par m_mid(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ UCASE$(x$)
+/*@ ##UCASE$(x$)
  *# Converts the string {{x$}} to uppercase. */
 static struct mu_par m_ucase(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
@@ -1400,7 +1400,7 @@ static struct mu_par m_ucase(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ LCASE$(x$)
+/*@ ##LCASE$(x$)
  *# Converts the string {{x$}} to lowercase. */
 static struct mu_par m_lcase(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
@@ -1413,7 +1413,7 @@ static struct mu_par m_lcase(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ TRIM$(x$)
+/*@ ##TRIM$(x$)
  *# Removes leading and trailing whitespace from string {{x$}}. */
 static struct mu_par m_trim(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
@@ -1434,7 +1434,7 @@ static struct mu_par m_trim(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ INSTR(str$, find$)
+/*@ ##INSTR(str$, find$)
  *# Searches for {{find$}} in {{str$}} and returns the index.\n
  *# It returns 0 if {{find$}} was not found.
  */
@@ -1447,7 +1447,7 @@ static struct mu_par m_instr(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ IFF(cond, then_val, else_val)
+/*@ ##IFF(cond, then_val, else_val)
  *# If the condition {{cond}} is true, it returns {{then_val}},
  *# otherwise it returns {{else_val}}
  */
@@ -1461,7 +1461,7 @@ static struct mu_par m_iff(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ DATA(@list$, item1, item2, item3, ...)
+/*@ ##DATA(@list$, item1, item2, item3, ...)
  *# Populates an array named {{list$}}.\n
  *N The first parameter is a string containing the name of the array.
  *# A call
@@ -1506,7 +1506,7 @@ static struct mu_par m_data(struct musl *m, int argc, struct mu_par argv[]) {
 	rv.v.i = idx;
 	return rv;
 }
-/*@ MAP(@mymap, key1, val1, key2, val2, ...)
+/*@ ##MAP(@mymap, key1, val1, key2, val2, ...)
  *# Initializes {{mymap}} as an array of key-value pairs.\n
  *# A call
  *[
@@ -1543,9 +1543,9 @@ static struct mu_par m_map(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ PUSH(val)
+/*@ ##PUSH(val)
  *# Pushes a value {{val}} onto an internal stack where it can be popped 
- *# later through the {{POP()}} function.\n
+ *# later through the {{~~POP()}} function.\n
  *# It is used to simulate local variables in subroutines.
  *X PUSH(foo)
  *N Don't access {{__stack[]}} and {{__sp}} directly.
@@ -1567,9 +1567,9 @@ static struct mu_par m_push(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ POP()
+/*@ ##POP()
  *# Pops a value from the stack that was pushed earlier through the
- *# {{PUSH()}} function.
+ *# {{~~PUSH()}} function.
  *X foo = POP()
  */
 static struct mu_par m_pop(struct musl *m, int argc, struct mu_par argv[]) {

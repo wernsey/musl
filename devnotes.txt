@@ -18,7 +18,7 @@ DIM is not needed (and not implemented) because of the way these hash tables are
 '&' is the string concatenation operator.
 '~' is the not-equals operator.
 
-DATA is alsoo a function, rather than a statement.
+DATA is also a function, rather than a statement.
 
 The operator @ operator is for /references/. The expression @identifier converts the identifier to a string, so @ARRAY$ will be equivalent to "ARRAY$". 
 
@@ -33,11 +33,17 @@ should be equivalent to
 	PRINT("Hello World")
 even if I only implement it at the statement level.
 
+mu_error_text() can be improved to search for the begining of the line where the error occurred. Then the current column can be obtained by subtracting the beginning of the line from the current m->s pointer. This can give you a much better indication of what the error is.
+
 Array indexes are case sensitive: people["John Doe"] and people["john doe"] refer to two separate variables, even though all other variables are case insensitive: Person and person will refer to the same variable. Do I change the case sensitivity of array indexes?
 * Case for Yes: It is more consistent with the rest of the language. It also means I can later implement something like vector.x to mean the same as vector["x"] and remain consistent with the rest of the language in terms of case sensitivity.
 * Case for No: When you put "John Doe" into people[], you probably really meant "John Doe", not "john doe".
 
 I really ought to run Musl through Valgrind again at some point.
+
+I should also compile it with Regex support again to make sure I haven't broken anything.
+
+I really ought to rename mu_set_num() and mu_get_num() to mu_set_int() and mu_get_int().
 
 ToDo Built-In Functions:
 ========================
@@ -54,6 +60,6 @@ Actually, the above is just a SPLIT() function. I would actually like to have fu
 
 ASC() and CHR() for converting between characters and numbers: ASC('A') is 65 and CHR(65) is 'A'
 
-How about an Oracle-like DECODE() function (see http://www.techonthenet.com/oracle/functions/decode.php for details).
+How about an Oracle-like DECODE() function (see http://www.techonthenet.com/oracle/functions/decode.php for details)?
 
 I'd also like to have a feature to dump all the variables somewhere for debugging Musl programs. It should be an API function and a Built-in function.
