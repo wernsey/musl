@@ -20,7 +20,7 @@
 
 # Subroutine to print REGEX()'s submatches
 1000 IF M = 0 THEN PRINT("No Match"):RETURN
-1010 PRINT("Matches: ", M)
+1010 PRINT("Matches: ", M, " (", _M$["length"], ")")
 # On a successful match, _M$[] will contain all the submatches.
 # Note that _M$[] is 0 indexed, therefore the need for the M-1
 FOR I = 0 TO M - 1 DO

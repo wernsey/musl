@@ -39,7 +39,7 @@ Array indexes are case sensitive: people["John Doe"] and people["john doe"] refe
 * Case for Yes: It is more consistent with the rest of the language. It also means I can later implement something like vector.x to mean the same as vector["x"] and remain consistent with the rest of the language in terms of case sensitivity.
 * Case for No: When you put "John Doe" into people[], you probably really meant "John Doe", not "john doe".
 
-I really ought to run Musl through Valgrind again at some point.
+I've ran it through Valgrind recently, and there's definitely a hand full of memory leaks. Most of them seem related to par_as_str() and string parameters in ,params(), but I'm to tired at the moment to figure it out. The script test/data.mus seems to expose most of them.
 
 I should also compile it with Regex support again to make sure I haven't broken anything.
 

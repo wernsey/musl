@@ -17,7 +17,7 @@ OBJECTS=$(SOURCES:.c=.o)
 # If your system does not have POSIX regular expressions
 # (regcomp(), regexec(), etc.) you can remove this line
 # to disable the REGEX() built-in function
-#CFLAGS += -DWITH_REGEX
+CFLAGS += -DWITH_REGEX
 
 all: musl manual.html
 
