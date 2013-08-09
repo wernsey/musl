@@ -178,16 +178,16 @@ int mu_par_num(struct musl *m, int n, int argc, struct mu_par argv[]);
  */
 const char *mu_par_str(struct musl *m, int n, int argc, struct mu_par argv[]);
 
-/*@ int ##mu_set_num(struct musl *m, const char *name, int num)
+/*@ int ##mu_set_int(struct musl *m, const char *name, int num)
  *# Sets the value of a numeric variable.\n
  *# Returns 0 on failure.  
  */
-int mu_set_num(struct musl *m, const char *name, int num);
+int mu_set_int(struct musl *m, const char *name, int num);
 
-/*@ int ##mu_get_num(struct musl *m, const char *name)
+/*@ int ##mu_get_int(struct musl *m, const char *name)
  *# Gets the value of a numeric variable. 
  */
-int mu_get_num(struct musl *m, const char *name);
+int mu_get_int(struct musl *m, const char *name);
 
 /*@ int ##mu_set_str(struct musl *m, const char *name, const char *val)
  *# Sets the value of a variable to a string.\n

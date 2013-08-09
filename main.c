@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
 
 	/* This is how you can set the values of variables */
 	mu_set_str(m, "mystr$", "fnord");
-	mu_set_num(m, "mynum", 12345);
+	mu_set_int(m, "mynum", 12345);
 	/* You can also access array variables like this: */
 	mu_set_str(m, "myarray$[foo]", "XYZZY");
 
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
 		 */
 		if(!(s = mu_readfile(argv[i]))) {
 			fprintf(stderr, "ERROR: Unable to read \"%s\"\n", argv[i]);
-			exit(EXIT_FAILURE);
+			break;
 		}
 
 #ifdef TEST
@@ -126,7 +126,6 @@ int main(int argc, char *argv[]) {
 			/* This is how you retrieve info about interpreter errors: */
 			fprintf(stderr, "ERROR:Line %d: %s:\n>> %s\n", mu_cur_line(m), mu_error_msg(m),
 					mu_error_text(m));
-			return EXIT_FAILURE;
 		}
 
 		/* The return value of mu_readfile() also needs to be free()'ed.
@@ -138,7 +137,7 @@ int main(int argc, char *argv[]) {
 #ifdef TEST
 	/* This is how you retrieve variable values from the interpreter: */
 	printf("============\nmystr$= \"%s\"\nmynum= %d\nmyarray$[foo]= \"%s\"\n",
-			mu_get_str(m, "mystr$"), mu_get_num(m, "mynum"), mu_get_str(m, "myarray$[foo]"));
+			mu_get_str(m, "mystr$"), mu_get_int(m, "mynum"), mu_get_str(m, "myarray$[foo]"));
 #endif
 
 	/* Destroy the interpreter when we're done with it */
@@ -425,7 +424,7 @@ static struct mu_par my_regex(struct musl *m, int argc, struct mu_par argv[])
 				mu_throw(m, "Out of memory");
 			free(match);
 		}
-		if(!mu_set_num(m, "_m$[length]", r))
+		if(!mu_set_int(m, "_m$[length]", r))
 			mu_throw(m, "Out of memory");
 			
 		rv.v.i = r;
@@ -447,10 +446,14 @@ static struct mu_par my_call(struct musl *m, int argc, struct mu_par argv[]) {
 
 	rv.v.i = mu_gosub(m, label);
 	if(!rv.v.i) {
-		/* You really should call mu_throw(),
-		 * but you get an opportunity first to
- 		 * clean up after yourself */
-		mu_throw(m, mu_error_msg(m));
+		/* You really should call mu_throw(), but you get an opportunity first to
+ 		 * clean up after yourself.
+		 * The NULL parameter to mu_throw() lets it keep the current value of m->error_msg
+		 */		
+		/* FIXME: This call to mu_throw() causes the parameter to CALL() to be leaked. 
+			devnotes.txt explains the situation.
+		*/
+		mu_throw(m, NULL); 
 	}
 	return rv;
 }

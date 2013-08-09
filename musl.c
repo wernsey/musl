@@ -243,11 +243,12 @@ static void put_var(hash_table tbl, struct var *val) {
  */
 
 void mu_throw(struct musl *m, const char *msg, ...) {
-	va_list arg;
-	va_start (arg, msg);
-  	vsnprintf (m->error_msg, MAX_ERROR_TEXT-1, msg, arg);
-  	va_end (arg);
-
+	if(msg) {
+		va_list arg;
+		va_start (arg, msg);
+		vsnprintf (m->error_msg, MAX_ERROR_TEXT-1, msg, arg);
+		va_end (arg);
+	}
 	longjmp(m->on_error, -1);
 }
 
@@ -561,7 +562,7 @@ static const char *stmt(struct musl *m) {
 					mu_throw(m, "Out of memory");
 				free(rhs.v.s);
 			} else {
-				if(m->active && !mu_set_num(m, name, rhs.v.i))
+				if(m->active && !mu_set_int(m, name, rhs.v.i))
 					mu_throw(m, "Out of memory");
 			}
 		} else if(!has_let && u == '(') {
@@ -683,7 +684,7 @@ static const char *stmt(struct musl *m) {
 				stmt(m);
 			}
 		} else
-			mu_set_num(m, buf, start);
+			mu_set_int(m, buf, start);
 	} else if(t == T_NEXT) {
 		if(m->active) {
 			int start, stop, step, idx;
@@ -717,13 +718,13 @@ static const char *stmt(struct musl *m) {
 
 			expect(m, T_DO, "DO");
 
-			idx = mu_get_num(m, buf);
+			idx = mu_get_int(m, buf);
 			if(idx == stop) {
 				m->s = save;
 				m->for_sp--;
 			} else {
 				idx += step;
-				mu_set_num(m, buf, idx);
+				mu_set_int(m, buf, idx);
 			}
 		}
 		return NULL;
@@ -1058,10 +1059,19 @@ int mu_run(struct musl *m, const char *s) {
 
 	if(setjmp(m->on_error) != 0) {
 		int i;
+		const char *l = m->s;
+		/* Find the line where the error occured */
 		tok_reset(m);
-		for(i = 0; i < MAX_ERROR_TEXT - 1 && m->s[i] != '\0' && m->s[i] != '\n'; i++)
-			m->error_text[i] = m->s[i];
+		while(l > s) {
+			if(l[-1] == '\n') {
+				break;
+			}
+			l--;
+		}
+		for(i = 0; i < MAX_ERROR_TEXT - 1 && l[i] != '\0' && !strchr("\r\n", l[i]); i++)
+			m->error_text[i] = l[i];
 		m->error_text[i] = '\0';
+		
 		return 0;
 	}
 
@@ -1106,22 +1116,12 @@ int mu_gosub(struct musl *m, const char *label) {
 	/* Save the old error handler and set the new one */
 	memcpy(&save_jmp, &m->on_error, sizeof save_jmp);
 
-	if(setjmp(m->on_error) != 0) {
-		int i;
-		tok_reset(m);
-		for(i = 0; i < MAX_ERROR_TEXT - 1 && m->s[i] != '\0' && m->s[i] != '\n'; i++)
-			m->error_text[i] = m->s[i];
-		m->error_text[i] = '\0';
-
-		/* Need to restore the old error handler */
-		goto restore;
+	if(setjmp(m->on_error) == 0) {
+		/* Run the subroutine */
+		program(m);
+		rv  = 1;
 	}
 
-	/* Run the subroutine */
-	program(m);
-	rv  = 1;
-
-restore:
 	/* Restore everything */
 	memcpy(&m->on_error, &save_jmp, sizeof save_jmp);
 	m->s = save;
@@ -1155,7 +1155,7 @@ void mu_cleanup(struct musl *m) {
 /*
  * Accessor functions
  */
-int mu_set_num(struct musl *m, const char *name, int num) {
+int mu_set_int(struct musl *m, const char *name, int num) {
 	struct var *v = find_var(m->vars, name);
 
 	if(!v) {
@@ -1169,7 +1169,7 @@ int mu_set_num(struct musl *m, const char *name, int num) {
 	return 1;
 }
 
-int mu_get_num(struct musl *m, const char *name) {
+int mu_get_int(struct musl *m, const char *name) {
 	struct var *v = find_var(m->vars, name);
 	if(!v)
 		return 0;
@@ -1269,6 +1269,25 @@ int mu_valid_id(const char *id) {
  * that return strings should allocate those strings on the heap,
  * because Musl will call free() on them at a later stage.
  */
+
+/*@ ##THROW(msg$)
+ *# Throws an error with the specified message.
+ */
+static struct mu_par m_throw(struct musl *m, int argc, struct mu_par argv[]) {
+	struct mu_par rv = {mu_int, {0}};
+	char buffer[MAX_ERROR_TEXT];
+	
+	/* Because of the longjmp() in mu_throw(), we never get back to 
+	 * fparams() so the parameter passed to THROW() won't get free()d,
+	 * so we free() it here.
+	 */
+	char *msg = (char*)mu_par_str(m, 0, argc, argv);
+	snprintf(buffer, MAX_ERROR_TEXT, "%s", msg);
+	free(msg);
+	
+	mu_throw(m, "%s", buffer);
+	return rv;
+}
 
 /*@ ##VAL(x$)
  *# Converts the string {{x$}} to a number. */
@@ -1467,7 +1486,7 @@ static struct mu_par m_data(struct musl *m, int argc, struct mu_par argv[]) {
 		mu_throw(m, "DATA()'s first parameter must be a valid identifier");
 		
 	snprintf(name, TOK_SIZE, "%s[length]", aname);
-	idx = mu_get_num(m, name);
+	idx = mu_get_int(m, name);
 
 	for(i = 1; i < argc; i++) {
 		snprintf(name, TOK_SIZE, "%s[%d]", aname, ++idx);
@@ -1476,7 +1495,7 @@ static struct mu_par m_data(struct musl *m, int argc, struct mu_par argv[]) {
 	}
 
 	snprintf(name, TOK_SIZE, "%s[length]", aname);
-	if(!mu_set_num(m, name, idx))
+	if(!mu_set_int(m, name, idx))
 		mu_throw(m, "Out of memory");
 
 	rv.v.i = idx;
@@ -1532,13 +1551,13 @@ static struct mu_par m_push(struct musl *m, int argc, struct mu_par argv[]) {
 	char name[TOK_SIZE];
 	
 	if(mu_has_var(m, "__sp")) {
-		sp = mu_get_num(m, "__sp") + 1;
+		sp = mu_get_int(m, "__sp") + 1;
 	}
 	snprintf(name, TOK_SIZE, "__stack[%d]", sp);
 	if(!mu_set_str(m, name, mu_par_str(m, 0, argc, argv)))
 		mu_throw(m, "Out of memory");
 	
-	mu_set_num(m, "__sp", sp);
+	mu_set_int(m, "__sp", sp);
 	
 	return rv;
 }
@@ -1556,21 +1575,22 @@ static struct mu_par m_pop(struct musl *m, int argc, struct mu_par argv[]) {
 	if(!mu_has_var(m, "__sp"))
 		mu_throw(m, "No stack pointer for POP()");
 		
-	sp = mu_get_num(m, "__sp");
+	sp = mu_get_int(m, "__sp");
 	if(sp <= 0)
 		mu_throw(m, "Stack underflow in POP()");
 	
 	snprintf(name, TOK_SIZE, "__stack[%d]", sp);
 	rv.v.s = strdup(mu_get_str(m, name));
 	
-	mu_set_num(m, "__sp", sp - 1);
+	mu_set_int(m, "__sp", sp - 1);
 	
 	return rv;
 }
 
 /* Adds the standard functions to the interpreter */
 static int add_stdfuns(struct musl *m) {
-	return !(!mu_add_func(m, "val", m_val) ||
+	return !(!mu_add_func(m, "throw", m_throw) ||
+		!mu_add_func(m, "val", m_val) ||
 		!mu_add_func(m, "str$", m_str) ||
 		!mu_add_func(m, "len", m_len) ||
 		!mu_add_func(m, "left$", m_left) ||
