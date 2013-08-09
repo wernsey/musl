@@ -1590,17 +1590,8 @@ static struct mu_par m_pop(struct musl *m, int argc, struct mu_par argv[]) {
  */
 static struct mu_par m_throw(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
-	char buffer[MAX_ERROR_TEXT];
-	
-	/* Because of the longjmp() in mu_throw(), we never get back to 
-	 * fparams() so the parameter passed to THROW() won't get free()d,
-	 * so we free() it here.
-	 */
-	char *msg = (char*)mu_par_str(m, 0, argc, argv);
-	snprintf(buffer, MAX_ERROR_TEXT, "%s", msg);
-	free(msg);
-	
-	mu_throw(m, "%s", buffer);
+	char *msg = (char*)mu_par_str(m, 0, argc, argv);	
+	mu_throw(m, "%s", msg);
 	return rv;
 }
 
