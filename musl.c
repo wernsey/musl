@@ -751,7 +751,7 @@ static const char *stmt(struct musl *m) {
 /*# fparams ::= [expr ',' expr ',' ...]
  */
 static struct mu_par fparams(const char *name, struct musl *m) {
-	int t, i, argc = 0;
+	int t, i, argc = 0, e;
 	struct mu_par argv[MAX_PARAMS], rv = {mu_int, {0}};
 	struct var *v;
 
@@ -772,8 +772,25 @@ static struct mu_par fparams(const char *name, struct musl *m) {
 	if(!v || !v->v.fun)
 		mu_throw(m, "Call to undefined function %s()", name);
 
-	if(m->active)
-		rv = v->v.fun(m, argc, argv);
+	if(m->active) {
+		/* This whole setjmp()-longjmp()ing is to ensure that
+		 * the parameters get free()ed if mu_throw() is called
+		 * from within the function.
+		 */
+		volatile jmp_buf save_jmp;
+		memcpy(&save_jmp, &m->on_error, sizeof save_jmp);
+		if((e = setjmp(m->on_error)) == 0) {
+			rv = v->v.fun(m, argc, argv);
+		} else {
+			memcpy(&m->on_error, &save_jmp, sizeof save_jmp);
+			for(i = 0; i < argc; i++)
+				if(argv[i].type == mu_str)
+					free(argv[i].v.s);
+			longjmp(m->on_error, e);
+		}
+		memcpy(&m->on_error, &save_jmp, sizeof save_jmp);
+	}
+	
 	for(i = 0; i < argc; i++)
 		if(argv[i].type == mu_str)
 			free(argv[i].v.s);
@@ -1270,25 +1287,6 @@ int mu_valid_id(const char *id) {
  * because Musl will call free() on them at a later stage.
  */
 
-/*@ ##THROW(msg$)
- *# Throws an error with the specified message.
- */
-static struct mu_par m_throw(struct musl *m, int argc, struct mu_par argv[]) {
-	struct mu_par rv = {mu_int, {0}};
-	char buffer[MAX_ERROR_TEXT];
-	
-	/* Because of the longjmp() in mu_throw(), we never get back to 
-	 * fparams() so the parameter passed to THROW() won't get free()d,
-	 * so we free() it here.
-	 */
-	char *msg = (char*)mu_par_str(m, 0, argc, argv);
-	snprintf(buffer, MAX_ERROR_TEXT, "%s", msg);
-	free(msg);
-	
-	mu_throw(m, "%s", buffer);
-	return rv;
-}
-
 /*@ ##VAL(x$)
  *# Converts the string {{x$}} to a number. */
 static struct mu_par m_val(struct musl *m, int argc, struct mu_par argv[]) {
@@ -1587,10 +1585,28 @@ static struct mu_par m_pop(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
+/*@ ##THROW(msg$)
+ *# Throws an error with the specified message.
+ */
+static struct mu_par m_throw(struct musl *m, int argc, struct mu_par argv[]) {
+	struct mu_par rv = {mu_int, {0}};
+	char buffer[MAX_ERROR_TEXT];
+	
+	/* Because of the longjmp() in mu_throw(), we never get back to 
+	 * fparams() so the parameter passed to THROW() won't get free()d,
+	 * so we free() it here.
+	 */
+	char *msg = (char*)mu_par_str(m, 0, argc, argv);
+	snprintf(buffer, MAX_ERROR_TEXT, "%s", msg);
+	free(msg);
+	
+	mu_throw(m, "%s", buffer);
+	return rv;
+}
+
 /* Adds the standard functions to the interpreter */
 static int add_stdfuns(struct musl *m) {
-	return !(!mu_add_func(m, "throw", m_throw) ||
-		!mu_add_func(m, "val", m_val) ||
+	return !(!mu_add_func(m, "val", m_val) ||
 		!mu_add_func(m, "str$", m_str) ||
 		!mu_add_func(m, "len", m_len) ||
 		!mu_add_func(m, "left$", m_left) ||
@@ -1604,6 +1620,7 @@ static int add_stdfuns(struct musl *m) {
 		!mu_add_func(m, "data", m_data)||
 		!mu_add_func(m, "map", m_map)||
 		!mu_add_func(m, "push", m_push)||
-		!mu_add_func(m, "pop", m_pop)
+		!mu_add_func(m, "pop", m_pop) ||
+		!mu_add_func(m, "throw", m_throw)
 		);
 }

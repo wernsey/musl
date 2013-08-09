@@ -35,11 +35,7 @@ should be equivalent to
 	PRINT("Hello World")
 even if I only implement it at the statement level.
 
-BUG: Calls to mu_throw() from an external function will cause the parameters to be leaked, because the longjmp() in mu_throw() jumps right over the part of fparams() where those params are free()d. See the implementation of THROW() for more details.
-
-A solution to this problem would be to store the jmp_buf m->on_error in a local in fparams() and call setjmp() again, so that we get an opportunity within fparams() to free the parameters, and then throw the exception again.
-
-There are a couple of other places where a call to mu_throw() would cause memory to be leaked. Moral of the story: write your Musl programs in such a way that mu_throw() need never be called.
+There are some places where a call to mu_throw() could cause memory to be leaked. Moral of the story: write your Musl programs in such a way that mu_throw() need never be called.
 
 ToDo Built-In Functions:
 ========================
