@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
 			/* This is how you retrieve info about interpreter errors: */
 			fprintf(stderr, "ERROR:Line %d: %s:\n>> %s\n", mu_cur_line(m), mu_error_msg(m),
 					mu_error_text(m));
-			return 1;
+			return EXIT_FAILURE;
 		}
 
 		/* The return value of mu_readfile() also needs to be free()'ed.
@@ -182,7 +182,7 @@ static struct mu_par my_input_s(struct musl *m, int argc, struct mu_par argv[]) 
 	if(argc == 0)
 		fputs("> ", stdout);
 	else
-		fputs(mu_par_str(m, 0), stdout);
+		fputs(mu_par_str(m, 0, argc, argv), stdout);
 	fflush(stdout);
 
 	rv.type = mu_str;
@@ -211,8 +211,8 @@ static struct mu_par my_fopen(struct musl *m, int argc, struct mu_par argv[]) {
 
 	struct user_data *data = mu_get_data(m);
 
-	path = mu_par_str(m, 0); /* Get the path from the first parameter */
-	mode = mu_par_str(m, 1); /* Get the path from the second parameter */
+	path = mu_par_str(m, 0, argc, argv); /* Get the path from the first parameter */
+	mode = mu_par_str(m, 1, argc, argv); /* Get the path from the second parameter */
 
 	/* Our function returns an index into the file table */
 	rv.type = mu_int;
@@ -239,7 +239,7 @@ static struct mu_par my_fclose(struct musl *m, int argc, struct mu_par argv[]) {
 	int index;
 	struct user_data *data = mu_get_data(m);
 
-	index = mu_par_num(m, 0);
+	index = mu_par_num(m, 0, argc, argv);
 
 	if(index < 0 || index > NUM_FILES || !data->files[index])
 		mu_throw(m, "Invalid file handle in CLOSE()");
@@ -258,7 +258,7 @@ static struct mu_par my_feof(struct musl *m, int argc, struct mu_par argv[]) {
 	int index;
 	struct user_data *data = mu_get_data(m);
 
-	index = mu_par_num(m, 0);
+	index = mu_par_num(m, 0, argc, argv);
 
 	if(index < 0 || index > NUM_FILES || !data->files[index])
 		mu_throw(m, "Invalid file handle in EOF()");
@@ -279,7 +279,7 @@ static struct mu_par my_fread(struct musl *m, int argc, struct mu_par argv[]) {
 	char buffer[INPUT_BUFFER_SIZE];
 	struct user_data *data = mu_get_data(m);
 
-	index = mu_par_num(m, 0);
+	index = mu_par_num(m, 0, argc, argv);
 
 	if(index < 0 || index > NUM_FILES || !data->files[index])
 		mu_throw(m, "Invalid file handle in READ$()");
@@ -318,7 +318,7 @@ static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[]) {
 	int index, i;
 	struct user_data *data = mu_get_data(m);
 
-	index = mu_par_num(m, 0);
+	index = mu_par_num(m, 0, argc, argv);
 
 	if(index < 0 || index > NUM_FILES || !data->files[index])
 		mu_throw(m, "Invalid file handle in EOF()");
@@ -340,7 +340,7 @@ static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[]) {
  */
 static struct mu_par my_srand(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
-		srand(argc?mu_par_num(m, 0):time(NULL));
+		srand(argc?mu_par_num(m, 0, argc, argv):time(NULL));
 	return rv;
 }
 
@@ -355,9 +355,9 @@ static struct mu_par my_rand(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
 	rv.v.i = rand();
 	if(argc == 1)
-		rv.v.i = (rv.v.i % mu_par_num(m,0)) + 1;
+		rv.v.i = (rv.v.i % mu_par_num(m,0, argc, argv)) + 1;
 	else if(argc == 2)
-		rv.v.i = (rv.v.i % (mu_par_num(m,1) - mu_par_num(m,0) + 1)) + mu_par_num(m,0);
+		rv.v.i = (rv.v.i % (mu_par_num(m,1, argc, argv) - mu_par_num(m,0, argc, argv) + 1)) + mu_par_num(m,0, argc, argv);
 	return rv;
 }
 
@@ -384,8 +384,8 @@ static struct mu_par my_regex(struct musl *m, int argc, struct mu_par argv[])
 	struct mu_par rv = {mu_int, {0}};
 #ifdef WITH_REGEX
 #define NAME_SIZE	80
-	const char *pat = mu_par_str(m, 0);
-	const char *str = mu_par_str(m, 1);
+	const char *pat = mu_par_str(m, 0, argc, argv);
+	const char *str = mu_par_str(m, 1, argc, argv);
 	regex_t preg;
 	regmatch_t sm[10];
 	int r;
@@ -443,7 +443,7 @@ static struct mu_par my_regex(struct musl *m, int argc, struct mu_par argv[])
  */
 static struct mu_par my_call(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
-	const char *label = mu_par_str(m, 0);
+	const char *label = mu_par_str(m, 0, argc, argv);
 
 	rv.v.i = mu_gosub(m, label);
 	if(!rv.v.i) {

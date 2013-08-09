@@ -1,7 +1,7 @@
 My Developer Notes
 
-Differences from traditional BASICs:
-====================================
+Caveats wrt. traditional BASICs:
+================================
 
 PRINT is a function call, not a statement (mostly because if used as an embedded scripting language there may not be anywhere to print to).
 
@@ -24,6 +24,8 @@ The operator @ operator is for /references/. The expression @identifier converts
 
 It is useful, because functions like DATA() and MAP() takes as a first parameter the name of the variable as a string. Using the @ operatior makes it clear that the parameter is a reference to a variable.
 
+Array indexes are case sensitive: 'people["John Doe"]' and 'people["john doe"]' refer to two different variables, even though all other variables are case insensitive ('Person' and 'person' will refer to the same variable). 
+
 Things I would like to change (when I find time):
 =================================================
 
@@ -34,14 +36,6 @@ should be equivalent to
 even if I only implement it at the statement level.
 
 mu_error_text() can be improved to search for the begining of the line where the error occurred. Then the current column can be obtained by subtracting the beginning of the line from the current m->s pointer. This can give you a much better indication of what the error is.
-
-Array indexes are case sensitive: people["John Doe"] and people["john doe"] refer to two separate variables, even though all other variables are case insensitive: Person and person will refer to the same variable. Do I change the case sensitivity of array indexes?
-* Case for Yes: It is more consistent with the rest of the language. It also means I can later implement something like vector.x to mean the same as vector["x"] and remain consistent with the rest of the language in terms of case sensitivity.
-* Case for No: When you put "John Doe" into people[], you probably really meant "John Doe", not "john doe".
-
-I've ran it through Valgrind recently, and there's definitely a hand full of memory leaks. Most of them seem related to par_as_str() and string parameters in ,params(), but I'm to tired at the moment to figure it out. The script test/data.mus seems to expose most of them.
-
-I should also compile it with Regex support again to make sure I haven't broken anything.
 
 I really ought to rename mu_set_num() and mu_get_num() to mu_set_int() and mu_get_int().
 
