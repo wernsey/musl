@@ -535,8 +535,11 @@ static const char *stmt(struct musl *m) {
 	char name[TOK_SIZE], buf[TOK_SIZE];
 	struct var *v;
 	struct mu_par rhs;
-
-	if((t = tokenize(m)) == T_IDENT || t == T_LET) {
+	
+start:
+	if((t = tokenize(m)) == ':') {
+		goto start;
+	} else if(t == T_IDENT || t == T_LET) {
 		if(t == T_LET && (has_let = 1) && (t = tokenize(m)) != T_IDENT)
 			mu_throw(m, "Identifier expected");
 
@@ -565,7 +568,10 @@ static const char *stmt(struct musl *m) {
 				if(m->active && !mu_set_int(m, name, rhs.v.i))
 					mu_throw(m, "Out of memory");
 			}
-		} else if(!has_let && u == '(') {
+		} else if(has_let) {
+			mu_throw(m, "Assignment expected after LET");
+		} else {
+			tok_reset(m);
 			rhs = fparams(name, m);
 			if(rhs.type == mu_str)
 				free(rhs.v.s);
@@ -748,26 +754,34 @@ static const char *stmt(struct musl *m) {
 	return NULL;
 }
 
-/*# fparams ::= [expr ',' expr ',' ...]
+/*# fparams ::= '(' [expr ',' expr ',' ...] ')'
  */
 static struct mu_par fparams(const char *name, struct musl *m) {
-	int t, i, argc = 0, e;
+	int t, i, argc = 0, e, close = 0;
 	struct mu_par argv[MAX_PARAMS], rv = {mu_int, {0}};
 	struct var *v;
 
-	while((t = tokenize(m)) != ')') {
-		if(argc >= MAX_PARAMS)
-			mu_throw(m, "Too many parameters to function %s", name);
-
-		argv[argc] = expr(tok_reset(m));
-
-		argc++;
-		if((t = tokenize(m)) == ')')
-			break;
-		else if(t != ',')
-			mu_throw(m, "Expected ')'");
+	if((t = tokenize(m)) == '(') {
+		close = 1;
+		if(tokenize(m) == ')')
+			goto call;
+		tok_reset(m);
+	} else if(t != T_LF && t != ':') {
+		tok_reset(m);
+	} else {
+		tok_reset(m);
+		goto call; /* No arguments */
 	}
 
+	do {
+		argv[argc++] = expr(m);
+	} while(tokenize(m) == ',');
+	tok_reset(m);
+	
+	if(close && tokenize(m) != ')')
+		mu_throw(m, "Expected ')'");
+call:
+	
 	v = find_var(m->funcs, name);
 	if(!v || !v->v.fun)
 		mu_throw(m, "Call to undefined function %s()", name);
@@ -997,9 +1011,10 @@ static struct mu_par atom(struct musl *m) {
 		char name[TOK_SIZE], buf[TOK_SIZE];
 		strcpy(buf, m->token);
 
-		if((u=tokenize(m)) == '(')
+		if((u=tokenize(m)) == '(') {
+			tok_reset(m);
 			return fparams(buf, m);
-		else if(u == '[') {
+		} else if(u == '[') {
 
 			struct mu_par rhs = expr(m);
 			par_as_str(&rhs);

@@ -167,7 +167,7 @@ static struct mu_par my_print(struct musl *m, int argc, struct mu_par argv[]) {
 			fputs(argv[i].v.s, stdout);
 		else
 			printf("%d", argv[i].v.i);
-	printf("\n");
+	fputs("\n", stdout);
 	return rv;
 }
 

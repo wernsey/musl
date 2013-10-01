@@ -24,7 +24,7 @@ PRINT("TRIM 1: |", TRIM$("    Hello World"), "|")
 PRINT("TRIM 2: |", TRIM$("Hello World    "), "|")
 PRINT("TRIM 3: |", TRIM$("    Hello World    "), "|")
 PRINT("TRIM 4: |", TRIM$("Hello World"), "|")
-PRINT("INSTR: ", InStr("Hello World", "World"), ",", InStr("Hello World", "rofl"),)
+PRINT("INSTR: ", InStr("Hello World", "World"), ",", InStr("Hello World", "rofl"))
 
 # If you see the XXXX in the output' there's been a regression
 if 0 then if 1 then PRINT("XXXX")

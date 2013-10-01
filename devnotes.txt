@@ -29,12 +29,6 @@ Array indexes are case sensitive: 'people["John Doe"]' and 'people["john doe"]' 
 Things I would like to change (when I find time):
 =================================================
 
-The () around function parameters should be optional:
-    PRINT "Hello World"
-should be equivalent to
-	PRINT("Hello World")
-even if I only implement it at the statement level.
-
 There are some places where a call to mu_throw() could cause memory to be leaked. Moral of the story: write your Musl programs in such a way that mu_throw() need never be called.
 
 ToDo Built-In Functions:
@@ -52,6 +46,6 @@ Actually, the above is just a SPLIT() function. I would actually like to have fu
 
 ASC() and CHR() for converting between characters and numbers: ASC('A') is 65 and CHR(65) is 'A'
 
-How about an Oracle-like DECODE() function (see http://www.techonthenet.com/oracle/functions/decode.php for details)?
+How about an Oracle-like DECODE() function (see http://www.techonthenet.com/oracle/functions/decode.php for details)? I can give mine a different name, like SWITCH or SELECT
 
 I'd also like to have a feature to dump all the variables somewhere for debugging Musl programs. It should be an API function and a Built-in function.

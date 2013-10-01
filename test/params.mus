@@ -1,0 +1,29 @@
+# Different ways in which you can pass parameters to functions
+
+PRINT "Hello World"
+
+# In expressions, parameters must be enclosed in parentheses:
+x = UCASE$("foo")
+
+# I've also made it such that :s interpret to NOOPs 
+::::PRINT(x)
+
+# At the statement level the parentheses are optional
+# The second print should cause a blank line:
+PRINT "vvvvv"
+PRINT
+PRINT "^^^^^"
+
+# This line won't have a blank line before it because
+# the PRINT: is taken to be a label named "print".
+PRINT : PRINT "^^^ won't be blank"
+
+# These would all work:
+print()
+print "^^^ should be blank"
+
+PRINT() : PRINT "^^^ should be blank"
+
+PRINT "" : PRINT "^^^ should be blank"
+
+PRINT "A non blank line": PRINT "^^^ shouldn't be blank."
