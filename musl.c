@@ -328,6 +328,8 @@ whitespace:
 					case 'n' : *t++ = '\n'; break;
 					case 'r' : *t++ = '\r'; break;
 					case 't' : *t++ = '\t'; break;
+					case 'b' : *t++ = '\b'; break;
+					case 'a' : *t++ = '\a'; break;
 					default : *t++ = m->s[1]; break;
 				}
 				m->s+=2;
@@ -725,7 +727,7 @@ start:
 			expect(m, T_DO, "DO");
 
 			idx = mu_get_int(m, buf);
-			if(idx == stop) {
+			if((step > 0 && idx >= stop) || (step < 0 && idx <= stop)) {
 				m->s = save;
 				m->for_sp--;
 			} else {
@@ -1030,14 +1032,14 @@ static struct mu_par atom(struct musl *m) {
 		v = find_var(m->vars, name);
 		if(!v) {
 			if(!m->active) return ret;
-			mu_throw(m, "Read from undefined variable '%s'", name);
-		}
-
-		ret.type = v->type;
-		if(v->type == mu_int) {
-			ret.v.i = v->v.i;
+			/* Undefined variables are inited to 0 */
 		} else {
-			ret.v.s = strdup(v->v.s);
+			ret.type = v->type;
+			if(v->type == mu_int) {
+				ret.v.i = v->v.i;
+			} else {
+				ret.v.s = strdup(v->v.s);
+			}
 		}
 
 		return ret;
