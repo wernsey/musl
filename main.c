@@ -47,6 +47,7 @@ static struct mu_par my_fread(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_srand(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_rand(struct musl *m, int argc, struct mu_par argv[]);
+static struct mu_par my_time(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_regex(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_call(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_halt(struct musl *m, int argc, struct mu_par argv[]);
@@ -91,6 +92,7 @@ int main(int argc, char *argv[]) {
 
 	mu_add_func(m, "randomize", my_srand);
 	mu_add_func(m, "random", my_rand);
+	mu_add_func(m, "time", my_time);
 	
 	mu_add_func(m, "regex", my_regex);
 
@@ -162,11 +164,14 @@ int main(int argc, char *argv[]) {
 static struct mu_par my_print(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {argc}};
 	int i;
-	for(i = 0; i < argc; i++)
+	for(i = 0; i < argc; i++) {
+		if(i > 0)
+			fputc(' ', stdout);
 		if(argv[i].type == mu_str)
 			fputs(argv[i].v.s, stdout);
 		else
 			printf("%d", argv[i].v.i);
+	}
 	fputs("\n", stdout);
 	return rv;
 }
@@ -180,8 +185,10 @@ static struct mu_par my_input_s(struct musl *m, int argc, struct mu_par argv[]) 
 	char *c;
 	if(argc == 0)
 		fputs("> ", stdout);
-	else
+	else {
 		fputs(mu_par_str(m, 0, argc, argv), stdout);
+		fputc(' ', stdout);
+	}
 	fflush(stdout);
 
 	rv.type = mu_str;
@@ -339,7 +346,7 @@ static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[]) {
  */
 static struct mu_par my_srand(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
-		srand(argc?mu_par_num(m, 0, argc, argv):time(NULL));
+	srand(argc?mu_par_num(m, 0, argc, argv):time(NULL));
 	return rv;
 }
 
@@ -357,6 +364,37 @@ static struct mu_par my_rand(struct musl *m, int argc, struct mu_par argv[]) {
 		rv.v.i = (rv.v.i % mu_par_num(m,0, argc, argv)) + 1;
 	else if(argc == 2)
 		rv.v.i = (rv.v.i % (mu_par_num(m,1, argc, argv) - mu_par_num(m,0, argc, argv) + 1)) + mu_par_num(m,0, argc, argv);
+	return rv;
+}
+
+/*@ ##TIME([fmt])
+ *# Returns the current time as a formatted string.\n
+ *# The optional {{fmt}} parameter specifies the output
+ *# format, using the same notation as {{strftime()}} in
+ *# the C standard library.
+ *# The default format is {{"%Y/%m/%d %H:%M:%S"}}.
+ */
+static struct mu_par my_time(struct musl *m, int argc, struct mu_par argv[]) {
+	struct mu_par rv = {mu_str, {0}};
+	time_t t;
+	struct tm *tmp;
+	const char *fmt = "%Y/%m/%d %H:%M:%S";
+	
+	char buffer[50];
+	
+	if(argc > 0)
+		fmt = mu_par_str(m,0, argc, argv);
+	
+	time(&t);
+	tmp = localtime(&t);
+	if(!tmp) {
+		mu_throw(m, "localtime() error in TIME()");
+	}
+	if(!strftime(buffer, sizeof buffer,fmt,tmp)) {
+		mu_throw(m, "Unable to format time in TIME('%s')", fmt);
+	}
+	
+	rv.v.s = strdup(buffer);
 	return rv;
 }
 
