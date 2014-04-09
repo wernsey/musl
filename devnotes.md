@@ -9,8 +9,6 @@ Comments use hash symbols rather than single quotes. This is partly
 because I wanted single quotes to have the same meaning as double quotes,
 as in Javacript.
  
-`REM` is not supported for comments.
- 
 Statements found in some old BASICs that are not available include `CLS`, 
 `LOCATE`, `WHILE-WEND` and so on.
  
@@ -51,27 +49,16 @@ be leaked. Moral of the story: write your Musl programs in such a way that
 I don't do a `<>` operator for _not equals_ (I use `~` instead), because 
 the lexer doesn't support operators with multiple characters, but thinking 
 about it the parser could check for a `>` after a `<` and problem solved.
+
+`REM` is not supported for comments. I really ought to consider adding it.
  
 ## ToDo - Built-In Functions
  
 Ideas for built-in functions that may be useful go in this section.
- 
-* `Replace$(str$, find, repl)` - Replaces occurances of `find` with `repl` 
-in `str$`
-* `GSUB$()` - Like Awk's `gsub()` function (instead of `replace$()` above)
- 
-Speaking of Awk, how about a function `AWK(line$, [delim$])` that takes `line$` 
-and splits it into columns in `_C[i]`, so that a Musl script can do some of 
-the same work as Awk. It returns the number of columns found in the line. 
-`_C["length"]` should be the same as the arrays filled in by `DATA()` 
- 
-Actually, the above is just a `SPLIT()` function. I would actually like to 
-have functions like ColdFusion's List functions. They are very much in the spirit of
-Musl.
- 
-`ASC()` and `CHR()` for converting between characters and numbers:
-`ASC('A')` is 65 and `CHR(65)` is 'A'
- 
+
+I need a function that does more or less the same as `strtok()`, but perhaps 
+reentrant. Don't know what to name it. `TOKENIZE()` maybe?
+
 How about an Oracle-like DECODE() function (see 
 http://www.techonthenet.com/oracle/functions/decode.php for details)? I can give 
 mine a different name, like `SWITCH()` or `SELECT()`
