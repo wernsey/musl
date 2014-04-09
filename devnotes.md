@@ -33,11 +33,14 @@ It is useful, because functions like `DATA()` and `MAP()`
 takes as a first parameter the name of the variable as a string. Using
 the `@` operatior makes it clear that the parameter is a reference to a
 variable.
+
+Uninitialised variables are initialised as "", which is treated as 0
+in arithmetic.
  
 Array indexes are case sensitive: `people["John Doe"]` and
 `people["john doe"]` refer to two different variables, even though all
 other variables are case insensitive (`Person` and `person` will refer
-to the same variable). 
+to the same variable).
  
 ## Things I would like to change (when I find time):
  
@@ -46,18 +49,6 @@ to the same variable).
 There are some places where a call to `mu_throw()` could cause memory to 
 be leaked. Moral of the story: write your Musl programs in such a way that 
 `mu_throw()` need never be called.
-
-The `INPUT$()` function should take an optional second parameter that
-is the name of the variable to read, so that you can use
-	
-    INPUT$ "Please enter a number", @n
- 
-instead of
-	
-    n = INPUT$("Please enter a number")
- 
-If an undefined variable ends with `$` it should be initialised to "" rather
-than 0, so `PRINT undefined$` would print nothing.
  
 ## ToDo Built-In Functions:
  

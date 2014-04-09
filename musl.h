@@ -9,7 +9,7 @@
  *# About terminology:\n
  *{
  ** The {/interpreter/} is contained in the struct musl.
- *# It is executed by the {{~~mu_run()}} function.
+ *# It is created with the {{~~mu_create()}} function.
  ** A {/script/} is a string of text containing Musl code that
  *# is evaluated by {{~~mu_run()}} on an interpreter.
  ** The interpreter contains {/variables/}. Multiple scripts can

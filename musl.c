@@ -1032,7 +1032,9 @@ static struct mu_par atom(struct musl *m) {
 		v = find_var(m->vars, name);
 		if(!v) {
 			if(!m->active) return ret;
-			/* Undefined variables are inited to 0 */
+			/* Undefined variables are inited to "" */
+			ret.type = mu_str;
+			ret.v.s = strdup("");
 		} else {
 			ret.type = v->type;
 			if(v->type == mu_int) {
