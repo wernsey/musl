@@ -42,15 +42,17 @@ Array indexes are case sensitive: `people["John Doe"]` and
 other variables are case insensitive (`Person` and `person` will refer
 to the same variable).
  
-## Things I would like to change (when I find time):
- 
-`mu_par_num()` should be `mu_par_int()` in the API.
+## Known Issues
  
 There are some places where a call to `mu_throw()` could cause memory to 
 be leaked. Moral of the story: write your Musl programs in such a way that 
 `mu_throw()` need never be called.
+
+I don't do a `<>` operator for _not equals_ (I use `~` instead), because 
+the lexer doesn't support operators with multiple characters, but thinking 
+about it the parser could check for a `>` after a `<` and problem solved.
  
-## ToDo Built-In Functions:
+## ToDo - Built-In Functions
  
 Ideas for built-in functions that may be useful go in this section.
  

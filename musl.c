@@ -741,7 +741,7 @@ start:
 			tok_reset(m);
 		return NULL;
 	} else
-		mu_throw(m, "Statement expected (%d)", t);
+		mu_throw(m, "Statement expected");
 
 	if((t=tokenize(m)) == ':') {
 		while(tokenize(m) == T_LF);
@@ -750,7 +750,7 @@ start:
 	}
 
 	if(t != T_LF && t != T_KEND && t != T_END)
-		mu_throw(m, "':' or <LF> expected (%d)", t);
+		mu_throw(m, "':' or <LF> expected");
 
 	tok_reset(m);
 	return NULL;
@@ -1269,7 +1269,7 @@ int mu_add_func(struct musl *m, const char *name, mu_func fun) {
 	return 1;
 }
 
-int mu_par_num(struct musl *m, int n, int argc, struct mu_par argv[]) {
+int mu_par_int(struct musl *m, int n, int argc, struct mu_par argv[]) {
 	if(n >= argc)
 		mu_throw(m, "Too few parameters to function");
 	return par_as_int(&argv[n]);
@@ -1306,10 +1306,10 @@ int mu_valid_id(const char *id) {
  * because Musl will call free() on them at a later stage.
  */
 
-/*@ ##VAL(x$)
+/*@ ##INT(x$)
  *# Converts the string {{x$}} to a number. */
-static struct mu_par m_val(struct musl *m, int argc, struct mu_par argv[]) {
-	struct mu_par rv = {mu_int, {mu_par_num(m, 0, argc, argv)}};
+static struct mu_par m_int(struct musl *m, int argc, struct mu_par argv[]) {
+	struct mu_par rv = {mu_int, {mu_par_int(m, 0, argc, argv)}};
 	return rv;
 }
 
@@ -1335,7 +1335,7 @@ static struct mu_par m_len(struct musl *m, int argc, struct mu_par argv[]) {
 static struct mu_par m_left(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	const char *s = mu_par_str(m, 0, argc, argv);
-	int len = mu_par_num(m, 1, argc, argv);
+	int len = mu_par_int(m, 1, argc, argv);
 
 	if(len < 0)
 		mu_throw(m, "Invalid parameters to LEFT$()");
@@ -1355,7 +1355,7 @@ static struct mu_par m_left(struct musl *m, int argc, struct mu_par argv[]) {
 static struct mu_par m_right(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	const char *s = mu_par_str(m, 0, argc, argv);
-	int len = mu_par_num(m, 1, argc, argv);
+	int len = mu_par_int(m, 1, argc, argv);
 
 	if(len < 0)
 		mu_throw(m, "Invalid parameters to RIGHT$()");
@@ -1382,8 +1382,8 @@ static struct mu_par m_right(struct musl *m, int argc, struct mu_par argv[]) {
 static struct mu_par m_mid(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
 	const char *s = mu_par_str(m, 0, argc, argv);
-	int p = mu_par_num(m, 1, argc, argv) - 1;
-	int q = mu_par_num(m, 2, argc, argv);
+	int p = mu_par_int(m, 1, argc, argv) - 1;
+	int q = mu_par_int(m, 2, argc, argv);
 	int len = q - p;
 
 	if(q < p || p < 0)
@@ -1465,7 +1465,7 @@ static struct mu_par m_instr(struct musl *m, int argc, struct mu_par argv[]) {
  */
 static struct mu_par m_iff(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
-	int res = mu_par_num(m, 0, argc, argv) ? 1 : 2;
+	int res = mu_par_int(m, 0, argc, argv) ? 1 : 2;
 	rv = argv[res];
 	if(rv.type == mu_str) {
 		rv.v.s = strdup(rv.v.s);
@@ -1616,7 +1616,7 @@ static struct mu_par m_throw(struct musl *m, int argc, struct mu_par argv[]) {
 
 /* Adds the standard functions to the interpreter */
 static int add_stdfuns(struct musl *m) {
-	return !(!mu_add_func(m, "val", m_val) ||
+	return !(!mu_add_func(m, "int", m_int) ||
 		!mu_add_func(m, "str$", m_str) ||
 		!mu_add_func(m, "len", m_len) ||
 		!mu_add_func(m, "left$", m_left) ||

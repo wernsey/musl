@@ -164,12 +164,12 @@ const char *mu_error_text(struct musl *m);
  */
 int mu_cur_line(struct musl *m);
 
-/*@ int ##mu_par_num(struct musl *m, int n)
+/*@ int ##mu_par_int(struct musl *m, int n)
  *# Gets the {{n}}'th parameter of a function as a number.\n
  *# Only call it from {{~~mu_func()}} external functions because 
  *# it uses {{~~mu_throw()}} on errors.
  */
-int mu_par_num(struct musl *m, int n, int argc, struct mu_par argv[]);
+int mu_par_int(struct musl *m, int n, int argc, struct mu_par argv[]);
 
 /*@ const char *##mu_par_str(struct musl *m, int n)
  *# Gets the {{n}}'th parameter of a function as a string.\n

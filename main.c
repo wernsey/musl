@@ -255,7 +255,7 @@ static struct mu_par my_fclose(struct musl *m, int argc, struct mu_par argv[]) {
 	int index;
 	struct user_data *data = mu_get_data(m);
 
-	index = mu_par_num(m, 0, argc, argv);
+	index = mu_par_int(m, 0, argc, argv);
 
 	if(index < 0 || index > NUM_FILES || !data->files[index])
 		mu_throw(m, "Invalid file handle in CLOSE()");
@@ -274,7 +274,7 @@ static struct mu_par my_feof(struct musl *m, int argc, struct mu_par argv[]) {
 	int index;
 	struct user_data *data = mu_get_data(m);
 
-	index = mu_par_num(m, 0, argc, argv);
+	index = mu_par_int(m, 0, argc, argv);
 
 	if(index < 0 || index > NUM_FILES || !data->files[index])
 		mu_throw(m, "Invalid file handle in EOF()");
@@ -295,7 +295,7 @@ static struct mu_par my_fread(struct musl *m, int argc, struct mu_par argv[]) {
 	char buffer[INPUT_BUFFER_SIZE];
 	struct user_data *data = mu_get_data(m);
 
-	index = mu_par_num(m, 0, argc, argv);
+	index = mu_par_int(m, 0, argc, argv);
 
 	if(index < 0 || index > NUM_FILES || !data->files[index])
 		mu_throw(m, "Invalid file handle in READ$()");
@@ -334,7 +334,7 @@ static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[]) {
 	int index, i;
 	struct user_data *data = mu_get_data(m);
 
-	index = mu_par_num(m, 0, argc, argv);
+	index = mu_par_int(m, 0, argc, argv);
 
 	if(index < 0 || index > NUM_FILES || !data->files[index])
 		mu_throw(m, "Invalid file handle in EOF()");
@@ -356,7 +356,7 @@ static struct mu_par my_fwrite(struct musl *m, int argc, struct mu_par argv[]) {
  */
 static struct mu_par my_srand(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
-	srand(argc?mu_par_num(m, 0, argc, argv):time(NULL));
+	srand(argc?mu_par_int(m, 0, argc, argv):time(NULL));
 	return rv;
 }
 
@@ -371,9 +371,9 @@ static struct mu_par my_rand(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
 	rv.v.i = rand();
 	if(argc == 1)
-		rv.v.i = (rv.v.i % mu_par_num(m,0, argc, argv)) + 1;
+		rv.v.i = (rv.v.i % mu_par_int(m,0, argc, argv)) + 1;
 	else if(argc == 2)
-		rv.v.i = (rv.v.i % (mu_par_num(m,1, argc, argv) - mu_par_num(m,0, argc, argv) + 1)) + mu_par_num(m,0, argc, argv);
+		rv.v.i = (rv.v.i % (mu_par_int(m,1, argc, argv) - mu_par_int(m,0, argc, argv) + 1)) + mu_par_int(m,0, argc, argv);
 	return rv;
 }
 
