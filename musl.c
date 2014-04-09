@@ -1323,7 +1323,9 @@ static struct mu_par m_str(struct musl *m, int argc, struct mu_par argv[]) {
 }
 
 /*@ ##ASC(a)
- *# Returns the ASCII value of {{a}} */
+ *# Returns the ASCII value of {{a}} 
+ *X ASC('A') = 65 
+ */
 static struct mu_par m_asc(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
 	const char *c = mu_par_str(m, 0, argc, argv);
@@ -1332,7 +1334,9 @@ static struct mu_par m_asc(struct musl *m, int argc, struct mu_par argv[]) {
 }
 
 /*@ ##CHR(v)
- *# Returns the character associated with the ASCII value {{a}} */
+ *# Returns the character associated with the ASCII value {{a}} 
+ *X CHR(66) = 'B' 
+ */
 static struct mu_par m_chr(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_str, {0}};
 	int a = mu_par_int(m, 0, argc, argv);
