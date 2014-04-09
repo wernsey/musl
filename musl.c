@@ -1322,6 +1322,25 @@ static struct mu_par m_str(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
+/*@ ##ASC(a)
+ *# Returns the ASCII value of {{a}} */
+static struct mu_par m_asc(struct musl *m, int argc, struct mu_par argv[]) {
+	struct mu_par rv = {mu_int, {0}};
+	const char *c = mu_par_str(m, 0, argc, argv);
+	rv.v.i = c[0];
+	return rv;
+}
+
+/*@ ##CHR(v)
+ *# Returns the character associated with the ASCII value {{a}} */
+static struct mu_par m_chr(struct musl *m, int argc, struct mu_par argv[]) {
+	struct mu_par rv = {mu_str, {0}};
+	int a = mu_par_int(m, 0, argc, argv);
+	rv.v.s = strdup(" ");
+	rv.v.s[0] = a;	
+	return rv;
+}
+
 /*@ ##LEN(x$)
  *# Returns the length of string {{x$}} */
 static struct mu_par m_len(struct musl *m, int argc, struct mu_par argv[]) {
@@ -1618,6 +1637,8 @@ static struct mu_par m_throw(struct musl *m, int argc, struct mu_par argv[]) {
 static int add_stdfuns(struct musl *m) {
 	return !(!mu_add_func(m, "int", m_int) ||
 		!mu_add_func(m, "str$", m_str) ||
+		!mu_add_func(m, "asc", m_asc) ||
+		!mu_add_func(m, "chr", m_chr) ||
 		!mu_add_func(m, "len", m_len) ||
 		!mu_add_func(m, "left$", m_left) ||
 		!mu_add_func(m, "right$", m_right)||
