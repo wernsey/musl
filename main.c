@@ -82,6 +82,7 @@ int main(int argc, char *argv[]) {
 	 */
 	mu_add_func(m, "print", my_print);
 	mu_add_func(m, "input$", my_input_s);
+	mu_add_func(m, "input", my_input_s);
 
 	mu_add_func(m, "open", my_fopen);
 	mu_add_func(m, "close", my_fclose);
@@ -176,9 +177,12 @@ static struct mu_par my_print(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ ##INPUT$([prompt])
+/*@ ##INPUT$([prompt], [@var]) INPUT([prompt], [@var])
  *# Reads a string from the keyboard, with an optional prompt.\n
- *# Trailing newline characters are removed.
+ *# Both forms of the function behave the same.\n
+ *# Trailing newline characters are removed.\n
+ *# It returns the input string. If the optional {{@var}} parameter
+ *# is specified, {{var}} is also set to the input string.
  */
 static struct mu_par my_input_s(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv;
@@ -202,6 +206,12 @@ static struct mu_par my_input_s(struct musl *m, int argc, struct mu_par argv[]) 
 		for(c=rv.v.s;c[0];c++)
 			if(strchr("\r\n",c[0]))
 				c[0] = '\0';
+			
+	if(argc > 1) {
+		const char * name = mu_par_str(m, 1, argc, argv);
+		mu_set_str(m, name, rv.v.s);
+	}
+			
 	return rv;
 }
 
