@@ -40,6 +40,7 @@ struct user_data {
  */
 static struct mu_par my_print(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_input_s(struct musl *m, int argc, struct mu_par argv[]);
+static struct mu_par my_input(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_fopen(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_fclose(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_feof(struct musl *m, int argc, struct mu_par argv[]);
@@ -82,7 +83,7 @@ int main(int argc, char *argv[]) {
 	 */
 	mu_add_func(m, "print", my_print);
 	mu_add_func(m, "input$", my_input_s);
-	mu_add_func(m, "input", my_input_s);
+	mu_add_func(m, "input", my_input);
 
 	mu_add_func(m, "open", my_fopen);
 	mu_add_func(m, "close", my_fclose);
@@ -179,7 +180,8 @@ static struct mu_par my_print(struct musl *m, int argc, struct mu_par argv[]) {
 
 /*@ ##INPUT$([prompt], [@var]) INPUT([prompt], [@var])
  *# Reads a string from the keyboard, with an optional prompt.\n
- *# Both forms of the function behave the same.\n
+ *# The first form returns the input value as a string, while
+ *# the second form converts the value to an integer internally.\n
  *# Trailing newline characters are removed.\n
  *# It returns the input string. If the optional {{@var}} parameter
  *# is specified, {{var}} is also set to the input string.
@@ -210,6 +212,30 @@ static struct mu_par my_input_s(struct musl *m, int argc, struct mu_par argv[]) 
 	if(argc > 1) {
 		const char * name = mu_par_str(m, 1, argc, argv);
 		mu_set_str(m, name, rv.v.s);
+	}
+			
+	return rv;
+}
+
+static struct mu_par my_input(struct musl *m, int argc, struct mu_par argv[]) {
+	struct mu_par rv;
+	char buffer[50];
+	if(argc == 0)
+		fputs("> ", stdout);
+	else {
+		fputs(mu_par_str(m, 0, argc, argv), stdout);
+		fputc(' ', stdout);
+	}
+	fflush(stdout);
+
+	rv.type = mu_int;
+	rv.v.i = 0;
+	if(fgets(buffer, sizeof buffer - 1, stdin))
+		rv.v.i = atoi(buffer);
+	
+	if(argc > 1) {
+		const char * name = mu_par_str(m, 1, argc, argv);
+		mu_set_int(m, name, rv.v.i);
 	}
 			
 	return rv;
