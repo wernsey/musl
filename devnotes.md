@@ -18,8 +18,7 @@ There aren't any arrays, only hash tables, and they are indexed using
 `DIM` is not needed (and not implemented) because of the way these hash 
 tables are implemented.
 
-* `&` is the string concatenation operator.
-* `~` is the not-equals operator.
+`&` is the string concatenation operator.
  
 `DATA` is also a function, rather than a statement.
  
@@ -45,10 +44,6 @@ to the same variable).
 There are some places where a call to `mu_throw()` could cause memory to 
 be leaked. Moral of the story: write your Musl programs in such a way that 
 `mu_throw()` need never be called.
-
-I don't do a `<>` operator for _not equals_ (I use `~` instead), because 
-the lexer doesn't support operators with multiple characters, but thinking 
-about it the parser could check for a `>` after a `<` and problem solved.
 
 `REM` is not supported for comments. I really ought to consider adding it.
  

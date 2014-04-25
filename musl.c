@@ -103,7 +103,7 @@ struct musl {
  * Operators and Keywords
  */
 
-#define OPERATORS	"=<>~+-*/%&()[],:@"
+#define OPERATORS	"=<>+-*/%&()[],:@"
 
 #define T_END		0
 #define T_IDENT		1  /* Identifiers for normal variables eg "foo" */
@@ -128,6 +128,8 @@ struct musl {
 #define T_DO		269
 #define T_STEP		270
 #define T_NEXT		271
+
+#define T_NE		272	/* Not-Equals '<>' operator */
 
 struct {
 	char * name;
@@ -863,17 +865,26 @@ static struct mu_par not_expr(struct musl *m) {
 	return comp_expr(m);
 }
 
-/*# comp_expr ::= cat_expr [('='|'<'|'>'|'~') cat_expr]
+/*# comp_expr ::= cat_expr [('='|'<'|'>'|'<>') cat_expr]
  */
 static struct mu_par comp_expr(struct musl *m) {
 	int t, n = 0, r;
 	struct mu_par lhs = cat_expr(m);
-	if((t=tokenize(m)) == '=' || t == '<' || t == '>' || t == '~') {
+	t = tokenize(m);
+	
+	if(t == '<') { 
+		if(tokenize(m) == '>')
+			t = T_NE;
+		else
+			tok_reset(m);
+	}
+	
+	if(t == '=' || t == '<' || t == '>' || t == T_NE) {
 		struct mu_par rhs = cat_expr(m);
 		if(lhs.type == mu_str) {
 			par_as_str(&rhs);
 			r = strcmp(lhs.v.s, rhs.v.s);
-			n = (t == '=' && !r) || (t == '<' && r < 0) || (t == '>' && r > 0) || (t == '~' && r);
+			n = (t == '=' && !r) || (t == '<' && r < 0) || (t == '>' && r > 0) || (t == T_NE && r);
 			free(lhs.v.s);
 			free(rhs.v.s);
 			lhs.type = mu_int;
@@ -886,7 +897,7 @@ static struct mu_par comp_expr(struct musl *m) {
 				n = lhs.v.i < rhs.v.i;
 			else if(t == '>')
 				n = lhs.v.i > rhs.v.i;
-			else if(t == '~')
+			else if(t == T_NE)
 				n = lhs.v.i != rhs.v.i;
 			lhs.v.i = n;
 		}
@@ -1602,10 +1613,11 @@ static struct mu_par m_push(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ ##POP()
+/*@ ##POP([@val])
  *# Pops a value from the stack that was pushed earlier through the
  *# {{~~PUSH()}} function.
  *X foo = POP()
+ *X POP @foo
  */
 static struct mu_par m_pop(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_str, {0}};
@@ -1622,18 +1634,27 @@ static struct mu_par m_pop(struct musl *m, int argc, struct mu_par argv[]) {
 	snprintf(name, TOK_SIZE, "__stack[%d]", sp);
 	rv.v.s = strdup(mu_get_str(m, name));
 	
+	if(argc > 0) {
+		const char * name = mu_par_str(m, 0, argc, argv);
+		mu_set_str(m, name, rv.v.s);
+	}
+	
 	mu_set_int(m, "__sp", sp - 1);
 	
 	return rv;
 }
 
-/*@ ##THROW(msg$)
+/*@ ##THROW([msg$])
  *# Throws an error with the specified message.
  */
 static struct mu_par m_throw(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
-	char *msg = (char*)mu_par_str(m, 0, argc, argv);	
-	mu_throw(m, "%s", msg);
+	if(argc > 0) {
+		char *msg = (char*)mu_par_str(m, 0, argc, argv);	
+		mu_throw(m, "%s", msg);
+	} else {
+		mu_throw(m, "program is sad");
+	}
 	return rv;
 }
 
