@@ -26,11 +26,11 @@ NEXT
 testRef = "HELLO WORLD!!! LOL"
 PRINT("@testRef = '" & @testRef & "'")
 
-# Some recent changes affected STR$() and VAL(). Test them:
-PRINT('str$(1234) = ', str$(1234))
-PRINT('str$("hello") = ', str$("hello"))
-PRINT('val(1234) = ', val(1234))
-PRINT('val("hello") = ', val("hello"))
+# Some recent changes affected STR$() and INT(). Test them:
+PRINT('STR$(1234) = ', STR$(1234))
+PRINT('STR$("hello") = ', STR$("hello"))
+PRINT('INT(1234) = ', INT(1234))
+PRINT('INT("hello") = ', INT("hello"))
 
 # I snuck my tests for IFF() in here:
 PRINT("IFF(1) : ", iff(1, "right", "wrong"))

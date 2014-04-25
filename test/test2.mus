@@ -1,7 +1,7 @@
 print("Hello World ", 123)
 
 # This is how you convert a string to a number
-foo = VAL("1234")
+foo = INT("1234")
 
 # This is how you convert a number to a string
 bar$ = STR$(foo+20) 

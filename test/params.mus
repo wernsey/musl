@@ -19,8 +19,8 @@ PRINT "^^^^^"
 PRINT : PRINT "^^^ won't be blank"
 
 # These would all work:
-print()
-print "^^^ should be blank"
+PRINT()
+PRINT "^^^ should be blank"
 
 PRINT() : PRINT "^^^ should be blank"
 

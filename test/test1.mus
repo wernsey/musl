@@ -25,19 +25,19 @@ a = 5 + 15
 bar$ = STR$(A)
 LET Foo$ = "12" + bar$
 
-PRINT("FOO$ is ", foo$)
+PRINT "FOO$ is ", foo$ 
 
 foo$ = "Hello"
 foo$ = foo$ + " World"
 
-PRINT("FOO$ is ", foo$)
+PRINT "FOO$ is ", foo$ 
 
 # Demonstration of a simple loop:
 a = 0
 # Labels are indicated with a '@' and followed by a ':'
 start:       
   a = a + 1
-  PRINT("A is ", a)
+  PRINT "A is ", a 
 IF a < 10 THEN GOTO start
 
 # Test of string comparison functions:
@@ -53,18 +53,19 @@ print("Logic: ", not 0, 1 or 0, 1 and 0, 1 and 0 or 1, 1 and 0 or 0, 1 and (1 or
 
 # Use the INPUT$() function to read a line from the keyboard.
 reenter:
-in$ = INPUT$("Enter a number: ")
+in = INPUT("Enter a number: ")
 
-# Use the VAL() function to convert a string to a number.
-IF VAL(in$) < 10 THEN GOTO enterstring
-PRINT("Number is >= 10")
+# Use the INT() function to convert a string to a number.
+IF in < 10 THEN GOTO enterstring
+
+PRINT "Number is >= 10" 
 GOTO reenter
 enterstring:
 in$ = INPUT$("Enter a string [\"exit\" to exit]> ")
 IF in$ = "exit" THEN END
 PRINT("You entered: ", in$)
 
-IF in$ ~ "foo" THEN PRINT("You did not enter \"foo\"")
+IF in$ <> "foo" THEN PRINT("You did not enter \"foo\"")
 IF in$ = "show" THEN PRINT("########"):PRINT("%%%%%%%%")
 IF in$ = "sub" THEN GOSUB mysub:PRINT("After mysub")
 GOTO enterstring
