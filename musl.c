@@ -1644,16 +1644,16 @@ static struct mu_par m_pop(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
-/*@ ##THROW([msg$])
- *# Throws an error with the specified message.
+/*@ ##ABORT([msg$])
+ *# Aborts the current program by throwing an error with the specified message.
  */
-static struct mu_par m_throw(struct musl *m, int argc, struct mu_par argv[]) {
+static struct mu_par m_abort(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
 	if(argc > 0) {
 		char *msg = (char*)mu_par_str(m, 0, argc, argv);	
 		mu_throw(m, "%s", msg);
 	} else {
-		mu_throw(m, "program is sad");
+		mu_throw(m, "program aborted");
 	}
 	return rv;
 }
@@ -1677,6 +1677,6 @@ static int add_stdfuns(struct musl *m) {
 		!mu_add_func(m, "map", m_map)||
 		!mu_add_func(m, "push", m_push)||
 		!mu_add_func(m, "pop", m_pop) ||
-		!mu_add_func(m, "throw", m_throw)
+		!mu_add_func(m, "abort", m_abort)
 		);
 }
