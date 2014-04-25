@@ -1,0 +1,60 @@
+
+start:
+
+INPUT$ "Enter a string> ", @in$
+
+IF in$ = "woo" THEN print("wooo!")
+IF lcase$(in$) = "abort" THEN ABORT
+PRINT("You entered: ", in$)
+
+PRINT("Step 1.")
+PRINT(4)
+PRINT(4 + 3)
+PRINT(4 * 3)
+PRINT(12 / 3)
+PRINT(13 % 3)
+PRINT(4,5,6)
+
+PRINT("Step 1.a")
+PRINT(4 <> 3)
+PRINT(4 < > 4)
+
+PRINT("Step 2.")
+PRINT(4 > 3)
+PRINT(4 < 3)
+
+PRINT("Step 3.")
+PRINT("aaa" > "bbb")
+PRINT("aaa" < "bbb")
+
+PRINT "Step 4."
+x = 6 & 4
+PRINT x
+
+PRINT "Step 5."  
+y$ = 5
+PRINT y$ 
+
+PRINT "Step 6." 
+y[5+5] = "aaaaa"
+PRINT y[5*2] 
+
+# Test the new THROW function
+# THROW
+
+PRINT "Step 7." 
+PRINT -"3" 
+
+PRINT "Step 8."
+INPUT "Please enter a number:", @n
+PRINT "You entered", n
+
+PRINT "Step 9."
+N = "Hello"
+PUSH N
+N = "BYE BYE!!LOL!"
+POP @N
+PRINT "N is still", N
+
+stop:
+PRINT " ~~ The End. ~~ "
