@@ -396,10 +396,17 @@ static struct mu_par my_srand(struct musl *m, int argc, struct mu_par argv[]) {
 static struct mu_par my_rand(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
 	rv.v.i = rand();
-	if(argc == 1)
-		rv.v.i = (rv.v.i % mu_par_int(m,0, argc, argv)) + 1;
-	else if(argc == 2)
-		rv.v.i = (rv.v.i % (mu_par_int(m,1, argc, argv) - mu_par_int(m,0, argc, argv) + 1)) + mu_par_int(m,0, argc, argv);
+	if(argc == 1) {
+		int f = mu_par_int(m,0, argc, argv);
+		if(f <= 0) 
+			mu_throw(m, "Parameter to RANDOM(N) must be greater than 0");
+		rv.v.i = (rv.v.i % f) + 1;
+	} else if(argc == 2) {
+		int f = (mu_par_int(m,1, argc, argv) - mu_par_int(m,0, argc, argv) + 1);
+		if(f <= 0) 
+			mu_throw(m, "Parameters to RANDOM(N,M) must satisfy M-N+1 > 0");
+		rv.v.i = (rv.v.i % f) + mu_par_int(m,0, argc, argv);
+	}
 	return rv;
 }
 
