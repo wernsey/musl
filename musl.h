@@ -222,6 +222,12 @@ void mu_set_data(struct musl *m, void *data);
  */
 void *mu_get_data(struct musl *m);
 
+/*@ void ##mu_dump(struct musl *m, FILE *f)
+ *# Dumps the contents of the interpreter's variables to the file {{f}}.\n
+ *# This is useful for debugging purposes.
+ */
+void mu_dump(struct musl *m, FILE *f);
+
 /*@ int ##mu_valid_id(const char *id)
  *# Returns 1 if {{id}} is a valid Musl identifier,
  *# otherwise it returns 0.

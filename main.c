@@ -52,6 +52,7 @@ static struct mu_par my_time(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_regex(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_call(struct musl *m, int argc, struct mu_par argv[]);
 static struct mu_par my_halt(struct musl *m, int argc, struct mu_par argv[]);
+static struct mu_par my_dump(struct musl *m, int argc, struct mu_par argv[]);
 
 int main(int argc, char *argv[]) {
 	char *s;
@@ -100,6 +101,7 @@ int main(int argc, char *argv[]) {
 
 	mu_add_func(m, "call", my_call);
 	mu_add_func(m, "halt", my_halt);
+	mu_add_func(m, "dump", my_dump);
 
 	/* You can replace built-in functions with new ones.
 	 * You can also disable built-in functions by replacing them
@@ -130,6 +132,7 @@ int main(int argc, char *argv[]) {
 			/* This is how you retrieve info about interpreter errors: */
 			fprintf(stderr, "ERROR:Line %d: %s:\n>> %s\n", mu_cur_line(m), mu_error_msg(m),
 					mu_error_text(m));
+			mu_dump(m, stderr);
 		}
 
 		/* The return value of mu_readfile() also needs to be free()'ed.
@@ -547,5 +550,15 @@ static struct mu_par my_call(struct musl *m, int argc, struct mu_par argv[]) {
 static struct mu_par my_halt(struct musl *m, int argc, struct mu_par argv[]) {
 	struct mu_par rv = {mu_int, {0}};
 	mu_halt(m);
+	return rv;
+}
+
+/*@ ##DUMP()
+ *# Dumps the contents of the interpreter's memory to the standard error stream.\n
+ *# This is the closest that Musl is going to come to a debugger.
+ */
+static struct mu_par my_dump(struct musl *m, int argc, struct mu_par argv[]) {
+	struct mu_par rv = {mu_int, {0}};
+	mu_dump(m, stderr);
 	return rv;
 }

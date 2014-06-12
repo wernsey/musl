@@ -184,7 +184,7 @@ struct var {
 
 static void init_table(hash_table tbl) {
 	int i;
-	for(i = 0; i< HASH_SIZE; i++)
+	for(i = 0; i < HASH_SIZE; i++)
 		tbl[i] = NULL;
 }
 
@@ -778,6 +778,8 @@ static struct mu_par fparams(const char *name, struct musl *m) {
 	}
 
 	do {
+		if(argc + 1 == MAX_PARAMS)
+			mu_throw(m, "Too many parameters in call to '%s()'. Internal limit %d reached.", name, MAX_PARAMS);
 		argv[argc++] = expr(m);
 	} while(tokenize(m) == ',');
 	tok_reset(m);
@@ -1267,6 +1269,39 @@ void *mu_get_data(struct musl *m) {
 	return m->user;
 }
 
+static int var_qcomp(const void*p,const void*q) {
+	return strcmp(*(const char**)p,*(const char**)q);
+}
+
+void mu_dump(struct musl *m, FILE *f) {
+	int i, n = 0, a = 16, len = 10;
+	
+	const char **keys = calloc(a, sizeof *keys);
+	for(i = 0; i < HASH_SIZE; i++) {		
+		struct var *v = m->vars[i];
+		while(v) {
+			keys[n++] = v->name;
+			if(strlen(v->name) > len) len = strlen(v->name);
+			if(n == a) {
+				a <<= 1;
+				keys = realloc(keys, a * sizeof * keys);
+			}
+			v = v->next;
+		}
+	}
+	qsort(keys, n, sizeof *keys, var_qcomp);
+	for(i = 0; i < n; i++) {
+		struct var *v = find_var(m->vars, keys[i]);
+		assert(v);
+		if(v->type == mu_int)
+			fprintf(f, "%-*s:\t%d\n", len+1, v->name, v->v.i);
+		else
+			fprintf(f, "%-*s:\t\"%s\"\n", len+1, v->name, v->v.s);
+	}
+	
+	free(keys);
+}
+
 /*
  * External functions
  */
@@ -1493,6 +1528,20 @@ static struct mu_par m_instr(struct musl *m, int argc, struct mu_par argv[]) {
 	return rv;
 }
 
+/*@ ##CONTAINS(str$, what$)
+ *# Searches {{str$}} for any of the characters in {{what$}}.\n
+ *# It returns 1 if {{str$}} contains an
+ *X IF CONTAINS(str$, "aeuio") THEN PRINT "String contains vowels"
+ */
+static struct mu_par m_contains(struct musl *m, int argc, struct mu_par argv[]) {
+	struct mu_par rv = {mu_int, {0}};
+	const char *str = mu_par_str(m, 0, argc, argv);
+	char *x = strpbrk(str, mu_par_str(m, 1, argc, argv));
+	if(x)
+		rv.v.i = 1;
+	return rv;
+}
+
 /*@ ##IFF(cond, then_val, else_val)
  *# If the condition {{cond}} is true, it returns {{then_val}},
  *# otherwise it returns {{else_val}}
@@ -1672,6 +1721,7 @@ static int add_stdfuns(struct musl *m) {
 		!mu_add_func(m, "lcase$", m_lcase)||
 		!mu_add_func(m, "trim$", m_trim)||
 		!mu_add_func(m, "instr", m_instr)||
+		!mu_add_func(m, "contains", m_contains)||
 		!mu_add_func(m, "iff", m_iff)||
 		!mu_add_func(m, "data", m_data)||
 		!mu_add_func(m, "map", m_map)||
