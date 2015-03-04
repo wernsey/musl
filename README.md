@@ -23,6 +23,9 @@ Part of the Makefile is to run the code through doc.awk which scans the
 comments in the code for specific symbols from which an HTML file, manual.html,
 is generated.
 
+Mmmm, I'm going to have to rename the project. The name "Musl" is already
+taken (http://www.musl-libc.org/intro.html)
+
 -------------------------------------------------------------------------------
 These sources are provided under the terms of the unlicense: 
 
