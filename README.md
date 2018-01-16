@@ -3,10 +3,14 @@ Musl
 
 My Unstructured Scripting Language
 
-Homepage: http://wstoop.co.za/?musl
-Source: http://github.com/wernsey/musl
-
 Musl is my own small BASIC interpreter.
+
+* Homepage: http://wstoop.co.za/?musl
+* Source: http://github.com/wernsey/musl
+
+(I recently discovered that there is an implementation of `libc` that
+also goes by the name Musl. I will rename this project as soon as I can think up
+a catchy name. Sorry for any confusion caused.)
 
 The files in the distribution are:
 * musl.c - The source code of the interpreter itself.
